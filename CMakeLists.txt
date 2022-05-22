@@ -25,4 +25,4 @@ file(GLOB_RECURSE src-files "src/*.cpp")
 file(GLOB_RECURSE include-files "include/*.h")
 
 # add executable
-add_library(bunshi SHARED ${src-files} ${include-files})
+add_library(bunshi STATIC ${src-files} ${include-files})
