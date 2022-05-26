@@ -6,3 +6,5 @@ The actual ECS is using Archetypes, to store different types of entities that sh
 Therefore, an Archetype here, is the same thing as a "molecule" type(another word for this is "chemical compound", but it is a rather long word, which is why I didn't name this library after it). 
 A universe is just a collection filled with all these entities that may have different molecule types. 
 This universe is the main class in this system that allows you to for example create new entities and either add, delete or get components from them.
+
+# examples
