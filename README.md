@@ -7,4 +7,18 @@ Therefore, an Archetype here, is the same thing as a "molecule" type(another wor
 A universe is just a collection filled with all these entities that may have different molecule types. 
 This universe is the main class in this system that allows you to for example create new entities and either add, delete or get components from them.
 
-# examples
+# Examples 
+These can also be seen as "todo", since everything isn't implemented yet.
+
+This first example demonstrates how to iterate over entites that have specific components attached to them. In this example, it iterates over every entity that has a Player component, and a Position component, and then prints the entity's id.
+```
+#include <iostream>
+#include <bunshi.h>
+
+void iterate_players(bunshi::Universe& universe) {
+  
+   for(auto& [entity, player, position] : universe.iterator<Player, Position>()) {
+      std::cout << entity << "\n";
+   }
+}
+```
