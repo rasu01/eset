@@ -11,7 +11,17 @@ namespace bunshi {
     class Universe {
         public:
 
+            /*
+                Returns true if the entity provided exists,
+                otherwise return false
+            */
             bool exist(Entity entity);
+
+            /*
+                Tries to remove an entity. If successful, the function
+                returns true, else it returns false.
+            */
+            bool remove(Entity entity);
         private:
 
             //all the molecules

@@ -30,6 +30,12 @@ namespace bunshi {
                 size_t offset = entity_to_offset[entity];
                 return (T*)compound[component_index].get_component_pointer(offset);    
             }
+
+            /*
+                Removes an entity from this molecule and it's corresponding components.
+                Under the hood it will swap with the last entity that was added.
+            */
+            bool remove_entity(Entity entity);
         private:
 
             //id handling
@@ -41,9 +47,5 @@ namespace bunshi {
             //these are all the entities that have this molecule type
             std::unordered_map<Entity, size_t> entity_to_offset;
             std::vector<Entity> offset_to_entity;
-
-            //internal functions
-            void swap_entities(Entity a, Entity b);
-            void remove_entity(Entity entity);
     };
 }
