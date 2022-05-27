@@ -41,5 +41,9 @@ namespace bunshi {
             //these are all the entities that have this molecule type
             std::unordered_map<Entity, size_t> entity_to_offset;
             std::vector<Entity> offset_to_entity;
+
+            //internal functions
+            void swap_entities(Entity a, Entity b);
+            void remove_entity(Entity entity);
     };
 }
