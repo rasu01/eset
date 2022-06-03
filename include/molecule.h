@@ -34,8 +34,10 @@ namespace bunshi {
             /*
                 Removes an entity from this molecule and it's corresponding components.
                 Under the hood it will swap with the last entity that was added.
+                This shouldn't really be used by the user, since removing a nonexistant 
+                entity will give undefined behaviour.
             */
-            bool remove_entity(Entity entity);
+            void remove_entity(Entity entity);
         private:
 
             //id handling
