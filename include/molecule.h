@@ -38,6 +38,12 @@ namespace bunshi {
                 entity will give undefined behaviour.
             */
             void remove_entity(Entity entity);
+
+            /*
+                Inserts an entity.
+                The components are set to the default value with this
+            */
+            void insert_entity(Entity entity);
         private:
 
             //id handling

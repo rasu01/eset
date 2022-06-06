@@ -1,5 +1,5 @@
 #include "component_storage.h"
-#include <string>
+#include <cstring>
 
 using namespace bunshi;
 
@@ -29,6 +29,15 @@ void ComponentStorage::insert_end(void* pointer) {
         resize();
     }
     memcpy(data + component_count * component_size, (uint8_t*)pointer, component_size);
+    component_count++;
+}
+
+void ComponentStorage::insert_default_end() {
+    //if we are trying to overwrite the data, resize it before copying
+    if(component_count * component_size > size) {
+        resize();
+    }
+    memset(data + component_count * component_size, 0, component_size);
     component_count++;
 }
 

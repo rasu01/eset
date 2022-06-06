@@ -2,6 +2,12 @@
 
 using namespace bunshi;
 
+Universe::Universe() {
+
+    //create an empty archetype, so we can assign newly created entities to it
+    molecules.push_back(Molecule());
+}
+
 bool Universe::remove(Entity entity) {
     std::unordered_map<Entity, size_t>::iterator molecule_index_it = entities.find(entity);
     if(molecule_index_it != entities.end()) {
@@ -15,4 +21,11 @@ bool Universe::remove(Entity entity) {
 
 bool Universe::exist(Entity entity) {
     return entities.find(entity) != entities.end();
+}
+
+Entity Universe::create() {
+    Entity entity = entity_counter++;
+    entities.insert({entity, 0}); //assign the default archetype
+    molecules[0].insert_entity(entity);
+    return entity;
 }

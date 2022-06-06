@@ -29,6 +29,11 @@ namespace bunshi {
             void insert_end(void* pointer);
 
             /*
+                Inserts default data(zeros) at the end of the storage
+            */
+            void insert_default_end();
+
+            /*
                 Removes the last component.
                 In reality, it just decreases the component_count by one.
             */

@@ -43,6 +43,12 @@ bool test_single_non_existing_removal() {
     return !universe.remove(entity);
 }
 
+bool test_create_entity() {
+    bunshi::Universe universe;
+    bunshi::Entity entity = universe.create();
+    return entity == 0;
+}
+
 bool test_entity_and_size_t_id() {
 
     //since a bunshi::Entity is a size_t underneath,
@@ -50,9 +56,24 @@ bool test_entity_and_size_t_id() {
     return typeid(bunshi::Entity) == typeid(size_t);
 }
 
+bool test_created_exist() {
+    bunshi::Universe universe;
+    bunshi::Entity entity = universe.create();
+    return universe.exist(entity);
+}
+
+bool test_created_remove() {
+    bunshi::Universe universe;
+    bunshi::Entity entity = universe.create();
+    return universe.remove(entity);
+}
+
 int main() {
 
     run_test(test_single_non_existing_removal, "Removing a nonexisting entity");
+    run_test(test_create_entity, "Create entity id check");
+    run_test(test_created_exist, "Create entity exist check");
+    run_test(test_created_remove, "Create entity and remove");
     run_test(test_entity_and_size_t_id, "size_t and bunshi::Entity type");
 
     //print all the results

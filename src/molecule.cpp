@@ -24,3 +24,9 @@ void Molecule::remove_entity(Entity entity) {
     entity_to_offset.erase(entity);
     offset_to_entity.pop_back(); //since we "swaped", we delete the last element now
 }
+
+void Molecule::insert_entity(Entity entity) {
+    size_t new_offset = offset_to_entity.size();
+    entity_to_offset.insert({entity, new_offset});
+    offset_to_entity.push_back(entity);
+}

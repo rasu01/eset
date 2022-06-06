@@ -11,6 +11,8 @@ namespace bunshi {
     class Universe {
         public:
 
+            Universe();
+
             /*
                 Returns true if the entity provided exists,
                 otherwise return false
@@ -22,7 +24,17 @@ namespace bunshi {
                 returns true, else it returns false.
             */
             bool remove(Entity entity);
+
+
+            /*
+                Creates a single entity with no components attached.
+                Returns the id handle to the entity
+            */
+            Entity create();
         private:
+
+            //counter for all the entites that have been spawned
+            size_t entity_counter = 0;
 
             //all the molecules
             std::vector<Molecule> molecules;
