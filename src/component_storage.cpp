@@ -45,6 +45,14 @@ void ComponentStorage::remove_end() {
     component_count--;
 }
 
+size_t ComponentStorage::get_component_size() {
+    return component_size;
+}
+
+void ComponentStorage::set_component(size_t offset, void* pointer) {
+    memcpy(data + offset * component_size, (uint8_t*)pointer, component_size);
+}
+
 //private
 void ComponentStorage::resize() {
     if(data) {

@@ -68,6 +68,21 @@ bool test_created_remove() {
     return universe.remove(entity);
 }
 
+bool test_component_get() {
+    bunshi::Universe universe;
+    bunshi::Entity entity = universe.create();
+
+    float component = 10001.0;
+    size_t component2 = 111112129;
+    universe.insert_component<float>(entity, component);
+    universe.insert_component<size_t>(entity, component2);
+    
+    float number = *universe.get_component<float>(entity);
+
+    std::cout << number << " create\n";
+    return false;// number == 1000.0;
+}
+
 int main() {
 
     run_test(test_single_non_existing_removal, "Removing a nonexisting entity");
@@ -75,6 +90,7 @@ int main() {
     run_test(test_created_exist, "Create entity exist check");
     run_test(test_created_remove, "Create entity and remove");
     run_test(test_entity_and_size_t_id, "size_t and bunshi::Entity type");
+    run_test(test_component_get, "Insert and get a component from an Entity");
 
     //print all the results
     std::cout << "Tests: " << total << "; Passes: " << successes << "; Fails: " << fails << "\n";

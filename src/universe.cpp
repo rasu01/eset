@@ -29,3 +29,14 @@ Entity Universe::create() {
     molecules[0].insert_entity(entity);
     return entity;
 }
+
+size_t Universe::find_molecule(MoleculeSignature& signature) {
+
+    for(size_t i = 0; i < molecules.size(); i++) {
+        if(molecules[i].get_molecule_signature() == signature) {
+            return i;
+        }
+    }
+
+    return -1;
+}

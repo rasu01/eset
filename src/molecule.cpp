@@ -1,6 +1,18 @@
 #include "molecule.h"
+#include <cassert>
+#include <iostream>
 
 using namespace bunshi;
+
+Molecule::Molecule(MoleculeSignature& signature) {
+
+    for(size_t i = 0; i < signature.count(); i++) {
+
+        size_t id = signature.m_ids[i];
+        size_t size = signature.m_sizes[i];
+        compound.emplace(id, size);
+    }
+}
 
 void Molecule::remove_entity(Entity entity) {
 
@@ -9,7 +21,7 @@ void Molecule::remove_entity(Entity entity) {
     size_t offset = entity_to_offset[entity];
 
     //remove all the components and swap end components
-    for(ComponentStorage& storage : compound) {
+    for(auto& [id, storage] : compound) {
         storage.copy_end(offset);
         storage.remove_end();
     }
@@ -27,6 +39,59 @@ void Molecule::remove_entity(Entity entity) {
 
 void Molecule::insert_entity(Entity entity) {
     size_t new_offset = offset_to_entity.size();
-    entity_to_offset.insert({entity, new_offset});
+    entity_to_offset.emplace(entity, new_offset);
     offset_to_entity.push_back(entity);
+
+    for(auto&[id, storage] : compound) {
+        storage.insert_default_end();
+    }
+}
+
+MoleculeSignature Molecule::get_molecule_signature() {
+    MoleculeSignature signature;
+
+    //remove all the components and swap end components
+    for(auto& [id, storage] : compound) {
+        signature.add(id, storage.get_component_size());
+    }
+
+    return signature;
+}
+
+//signature functions
+size_t MoleculeSignature::count() {
+    return m_count;
+}
+
+void MoleculeSignature::add(size_t id, size_t size) {
+
+    //assert(m_count < 32);
+
+    m_ids[m_count] = id;
+    m_sizes[m_count] = size;
+    m_count++;
+}
+
+bool MoleculeSignature::operator==(MoleculeSignature& rhs) {
+
+    if(m_count != rhs.m_count) {
+        return false;
+    }
+
+    for(size_t self = 0; self < m_count; self++) {
+
+        bool exist = false;
+        for(size_t other = 0; other < rhs.m_count; other++) {
+            if(m_ids[self] == rhs.m_ids[other]) {
+                exist = true;
+                break;
+            }
+        }
+
+        if(!exist) {
+            return false;
+        }
+    }
+
+    return true;
 }

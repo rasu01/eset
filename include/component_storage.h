@@ -1,5 +1,6 @@
 #pragma once
 #include "types.h"
+#include <iostream>
 
 namespace bunshi {
 
@@ -38,6 +39,19 @@ namespace bunshi {
                 In reality, it just decreases the component_count by one.
             */
             void remove_end();
+
+            /*
+                Returns the size in bytes of this
+                component storage's component!
+            */
+            size_t get_component_size();
+
+            /*
+                Copies data from data pointer to
+                the given offset. This keeps the
+                size of the storage.
+            */
+            void set_component(size_t offset, void* pointer);
 
         private:
             uint8_t* data;
