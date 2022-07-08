@@ -72,15 +72,28 @@ bool test_component_get() {
     bunshi::Universe universe;
     bunshi::Entity entity = universe.create();
 
-    float component = 10001.0;
-    size_t component2 = 111112129;
-    universe.insert_component<float>(entity, component);
-    universe.insert_component<size_t>(entity, component2);
+    universe.insert_component<float>(entity, 1024.0);
+    universe.insert_component<size_t>(entity, 512);
     
-    float number = *universe.get_component<float>(entity);
+    float decimal = *universe.get_component<float>(entity);
+    size_t number = *universe.get_component<size_t>(entity);
 
-    std::cout << number << " create\n";
-    return false;// number == 1000.0;
+    return number == 512 && decimal == 1024.0;
+}
+
+bool test_iteration() {
+
+    bunshi::Universe universe;
+
+    bunshi::Entity entity = universe.create();
+    universe.insert_component<float>(entity, 10.0);
+    universe.insert_component<size_t>(entity, 100);
+
+    for(auto [entity_id, floating, number] : universe.iterator<float, size_t>()) {
+        std::cout << floating << ":" << number << "\n";
+    }
+
+    return false;
 }
 
 int main() {
@@ -91,6 +104,7 @@ int main() {
     run_test(test_created_remove, "Create entity and remove");
     run_test(test_entity_and_size_t_id, "size_t and bunshi::Entity type");
     run_test(test_component_get, "Insert and get a component from an Entity");
+    run_test(test_iteration, "Iteration");
 
     //print all the results
     std::cout << "Tests: " << total << "; Passes: " << successes << "; Fails: " << fails << "\n";

@@ -7,6 +7,46 @@
 
 namespace bunshi {
 
+    template<typename... T>
+    class EntityIterator {
+
+        public:
+            EntityIterator begin() {
+                EntityIterator it;
+                it.molecule_index = 0;
+                it.entity_index = 0;
+                it.finished = false;
+                return it;
+            }
+
+            EntityIterator end() {
+                EntityIterator it;
+                it.molecule_index = 0;
+                it.entity_index = 0;
+                it.finished = true;
+                return it;
+            }   
+
+            bool operator!=(EntityIterator& rhs) {
+                return molecule_index != rhs.molecule_index && entity_index != rhs.entity_index && finished != rhs.finished;
+            }
+
+            void operator++() {
+                //finished = true;
+            }
+
+            std::tuple<Entity, T*...> operator*() {
+                
+            }
+
+        private:
+            friend Universe;
+            Universe* universe;
+            size_t molecule_index;
+            size_t entity_index;
+            bool finished;
+    };
+
     //An ECS collection with all the entites stored inside compounds, that are stored in specific molecules(archetypes).
     class Universe {
         public:
@@ -40,7 +80,7 @@ namespace bunshi {
                 true.
             */
             template<typename T>
-            bool insert_component(Entity entity, T& component) {
+            bool insert_component(Entity entity, T component) {
                 
                 //check if the entity exists
                 std::unordered_map<Entity, size_t>::iterator molecule_index_it = entities.find(entity);
@@ -78,14 +118,8 @@ namespace bunshi {
                             size_t old_offset = molecules[molecule_index].entity_to_offset[entity];
                             size_t new_offset = new_molecule.entity_to_offset[entity];
 
-                            std::cout << "old mol id " << molecule_index << "\n";
-
                             for(auto& [id, storage] : molecules[molecule_index].compound) {
-                                std::cout <<  id << "\n";
-                                std::cout << typeid(float).hash_code() << "\n";
-
                                 void* data = storage.get_component_pointer(old_offset);
-                                std::cout << *(float*)data << "\n";
                                 new_molecule.compound[id].set_component(new_offset, data);
                             }
 
@@ -149,6 +183,35 @@ namespace bunshi {
                     //else return nullptr, since the entity doesn't exist
                     return nullptr;
                 }
+            }
+
+            /*
+
+            */
+            template<typename... T>
+            EntityIterator<T...> iterator() {
+
+                //get the type ids
+                MoleculeSignature signature;
+                ((signature.add(typeid(T).hash_code(), sizeof(T))), ...);
+
+                size_t found_molecules[1024];
+                size_t molecule_amount = 0;
+                for(size_t i = 0; i < molecules.size(); i++) {
+                    if(molecules[i].get_molecule_signature().contains(signature)) {
+                        found_molecules[molecule_amount] = i;
+                        molecule_amount++;
+                    }
+                }
+
+                //construct iterator
+                EntityIterator<T...> iter;
+                iter.finished = false;
+                iter.molecule_index = 0;
+                iter.entity_index = 0;
+                iter.universe = this;
+                return iter;
+
             }
 
             /*

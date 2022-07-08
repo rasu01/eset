@@ -17,6 +17,7 @@ namespace bunshi {
             size_t count();
             void add(size_t id, size_t size);
             bool operator==(MoleculeSignature& rhs);
+            bool contains(MoleculeSignature& other);
 
         private:
             friend Molecule;

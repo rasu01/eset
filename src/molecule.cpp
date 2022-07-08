@@ -95,3 +95,27 @@ bool MoleculeSignature::operator==(MoleculeSignature& rhs) {
 
     return true;
 }
+
+bool MoleculeSignature::contains(MoleculeSignature& other) {
+
+    if(m_count < other.m_count) {
+        return false;
+    }
+
+    for(size_t o = 0; o < other.m_count; o++) {
+
+        bool exist = false;
+        for(size_t s = 0; s < m_count; s++) {
+            if(m_ids[s] == other.m_ids[o]) {
+                exist = true;
+                break;
+            }
+        }
+
+        if(!exist) {
+            return false;
+        }
+    }
+
+    return true;
+}
