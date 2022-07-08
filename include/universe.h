@@ -27,6 +27,9 @@ namespace bunshi {
 
                 if(molecule_count > 0) {
                     it.current_molecule = molecules[0];
+                } else {
+                    it.molecule_index = -1;
+                    it.entity_index = -1;
                 }
 
                 return it;
@@ -236,7 +239,6 @@ namespace bunshi {
                         iter.molecule_count++;
                     }
                 }
-
                 
                 return iter;
             }
