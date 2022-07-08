@@ -25,7 +25,7 @@ void ComponentStorage::copy_end(size_t desination_offset) {
 void ComponentStorage::insert_end(void* pointer) {
 
     //if we are trying to overwrite the data, resize it before copying
-    if(component_count * component_size > size) {
+    if((component_count+1) * component_size > size) {
         resize();
     }
     memcpy(data + component_count * component_size, (uint8_t*)pointer, component_size);
@@ -34,7 +34,7 @@ void ComponentStorage::insert_end(void* pointer) {
 
 void ComponentStorage::insert_default_end() {
     //if we are trying to overwrite the data, resize it before copying
-    if(component_count * component_size > size) {
+    if((component_count+1) * component_size > size) {
         resize();
     }
     memset(data + component_count * component_size, 0, component_size);

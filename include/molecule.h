@@ -92,6 +92,19 @@ namespace bunshi {
             */
             MoleculeSignature get_molecule_signature();
 
+            inline size_t count() {
+                return offset_to_entity.size();
+            }
+
+            inline Entity get_entity(size_t& offset) {
+                return offset_to_entity[offset];
+            }
+
+            template<typename T>
+            inline void* get_data(size_t& offset) {
+                return compound[typeid(T).hash_code()].get_component_pointer(offset);
+            }
+
         private:
 
             friend Universe;

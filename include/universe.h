@@ -1,6 +1,8 @@
 #pragma once
 #include <vector>
+#include <string>
 #include <unordered_map>
+#include <map>
 #include "universe.h"
 #include "molecule.h"
 #include "types.h"
@@ -15,28 +17,50 @@ namespace bunshi {
                 EntityIterator it;
                 it.molecule_index = 0;
                 it.entity_index = 0;
-                it.finished = false;
+                it.molecule_count = molecule_count;
+                it.universe = universe;
+
+                //copy molecule pointers
+                for(size_t i = 0; i < molecule_count; i++) {
+                    it.molecules[i] = molecules[i];
+                }
+
+                if(molecule_count > 0) {
+                    it.current_molecule = molecules[0];
+                }
+
                 return it;
             }
 
             EntityIterator end() {
                 EntityIterator it;
-                it.molecule_index = 0;
-                it.entity_index = 0;
-                it.finished = true;
+                it.molecule_index = -1;
+                it.entity_index = -1;
                 return it;
             }   
 
             bool operator!=(EntityIterator& rhs) {
-                return molecule_index != rhs.molecule_index && entity_index != rhs.entity_index && finished != rhs.finished;
+                bool is_equal = molecule_index == rhs.molecule_index && entity_index == rhs.entity_index;
+                return !is_equal;
             }
 
             void operator++() {
-                //finished = true;
+                
+                size_t max_entities = current_molecule->count();
+                entity_index++;
+                if(entity_index == max_entities) {
+                    molecule_index++;
+                    entity_index = 0;
+                    current_molecule = molecules[molecule_index];
+                    if(molecule_index == molecule_count) {
+                        molecule_index = -1;
+                        entity_index = -1;
+                    }
+                }
             }
 
             std::tuple<Entity, T*...> operator*() {
-                
+                return std::make_tuple(current_molecule->get_entity(entity_index), (T*)current_molecule->get_data<T>(entity_index)...);
             }
 
         private:
@@ -44,7 +68,10 @@ namespace bunshi {
             Universe* universe;
             size_t molecule_index;
             size_t entity_index;
-            bool finished;
+
+            size_t molecule_count = 0;
+            Molecule* molecules[1024];
+            Molecule* current_molecule = nullptr;
     };
 
     //An ECS collection with all the entites stored inside compounds, that are stored in specific molecules(archetypes).
@@ -81,9 +108,9 @@ namespace bunshi {
             */
             template<typename T>
             bool insert_component(Entity entity, T component) {
-                
+
                 //check if the entity exists
-                std::unordered_map<Entity, size_t>::iterator molecule_index_it = entities.find(entity);
+                auto molecule_index_it = entities.find(entity);
                 if(molecule_index_it != entities.end()) {
 
                     //it exists
@@ -126,11 +153,11 @@ namespace bunshi {
                             //remove from old molecule
                             molecules[molecule_index].remove_entity(entity);
 
-                            //change molecule index since we moved it
-                            entities[entity] = new_molecule_index;
-
                             //insert the new component
                             new_molecule.compound[typeid(T).hash_code()].set_component(new_offset, &component);
+                            
+                            //change molecule index since we moved it
+                            molecule_index_it->second = new_molecule_index;
 
                         } else {
 
@@ -140,7 +167,7 @@ namespace bunshi {
 
                             size_t old_offset = molecules[molecule_index].entity_to_offset[entity];
                             size_t new_offset = new_molecule.entity_to_offset[entity];
-                            for(auto& [id, storage] :  molecules[molecule_index].compound) {
+                            for(auto& [id, storage] : molecules[molecule_index].compound) {
                                 void* data = storage.get_component_pointer(old_offset);
                                 new_molecule.compound[id].set_component(new_offset, data);
                             }
@@ -148,11 +175,11 @@ namespace bunshi {
                             //remove from old molecule
                             current_molecule.remove_entity(entity);
 
-                            //change molecule index since we moved it
-                            entities[entity] = molecule_try;
-
                             //insert the new component
                             new_molecule.compound[typeid(T).hash_code()].set_component(new_offset, &component);
+                            
+                            //change molecule index since we moved it
+                            molecule_index_it->second = molecule_try;
                         }
                     }
                     return true;
@@ -172,7 +199,7 @@ namespace bunshi {
             T* get_component(Entity entity) {
 
                 //check if it exists
-                std::unordered_map<Entity, size_t>::iterator molecule_index_it = entities.find(entity);
+                auto molecule_index_it = entities.find(entity);
                 if(molecule_index_it != entities.end()) {
 
                     //if it does, return the component from the molecule
@@ -195,23 +222,23 @@ namespace bunshi {
                 MoleculeSignature signature;
                 ((signature.add(typeid(T).hash_code(), sizeof(T))), ...);
 
-                size_t found_molecules[1024];
-                size_t molecule_amount = 0;
-                for(size_t i = 0; i < molecules.size(); i++) {
-                    if(molecules[i].get_molecule_signature().contains(signature)) {
-                        found_molecules[molecule_amount] = i;
-                        molecule_amount++;
-                    }
-                }
-
                 //construct iterator
                 EntityIterator<T...> iter;
-                iter.finished = false;
                 iter.molecule_index = 0;
                 iter.entity_index = 0;
                 iter.universe = this;
-                return iter;
+                iter.molecule_count = 0;
 
+                //find molecules
+                for(size_t i = 0; i < molecules.size(); i++) {
+                    if(molecules[i].get_molecule_signature().contains(signature)) {
+                        iter.molecules[iter.molecule_count] = &molecules[i];
+                        iter.molecule_count++;
+                    }
+                }
+
+                
+                return iter;
             }
 
             /*

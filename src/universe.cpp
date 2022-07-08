@@ -9,10 +9,11 @@ Universe::Universe() {
 }
 
 bool Universe::remove(Entity entity) {
-    std::unordered_map<Entity, size_t>::iterator molecule_index_it = entities.find(entity);
+    auto molecule_index_it = entities.find(entity);
     if(molecule_index_it != entities.end()) {
         size_t molecule_index = molecule_index_it->second;
         molecules[molecule_index].remove_entity(entity);
+        entities.erase(entity);
         return true;
     } else {
         return false;
@@ -24,10 +25,11 @@ bool Universe::exist(Entity entity) {
 }
 
 Entity Universe::create() {
-    Entity entity = entity_counter++;
-    entities.insert({entity, 0}); //assign the default archetype
-    molecules[0].insert_entity(entity);
-    return entity;
+    size_t new_id = entity_counter;
+    entity_counter++;
+    entities.emplace(new_id, 0); //assign the default archetype
+    molecules[0].insert_entity(new_id);
+    return new_id;
 }
 
 size_t Universe::find_molecule(MoleculeSignature& signature) {

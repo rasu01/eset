@@ -85,15 +85,19 @@ bool test_iteration() {
 
     bunshi::Universe universe;
 
-    bunshi::Entity entity = universe.create();
-    universe.insert_component<float>(entity, 10.0);
-    universe.insert_component<size_t>(entity, 100);
-
-    for(auto [entity_id, floating, number] : universe.iterator<float, size_t>()) {
-        std::cout << floating << ":" << number << "\n";
+    for(int i = 0; i < 1000; i++) {
+        bunshi::Entity entity = universe.create();
+        universe.insert_component<size_t>(entity, 100);
+        universe.insert_component<float>(entity, 10.0);
     }
 
-    return false;
+    size_t count = 0;
+    for(auto [entity_id, floating, number] : universe.iterator<float, size_t>()) {
+        if(*floating == 10.0 && *number == 100) {
+            count += 1;
+        }
+    }
+    return count == 1000;
 }
 
 int main() {
