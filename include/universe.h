@@ -6,6 +6,7 @@
 #include "universe.h"
 #include "molecule.h"
 #include "types.h"
+#include <utility>
 
 namespace bunshi {
 
@@ -19,6 +20,7 @@ namespace bunshi {
                 it.entity_index = 0;
                 it.molecule_count = molecule_count;
                 it.universe = universe;
+                it.component_index = 0;
 
                 //copy molecule pointers
                 for(size_t i = 0; i < molecule_count; i++) {
@@ -27,6 +29,9 @@ namespace bunshi {
 
                 if(molecule_count > 0) {
                     it.current_molecule = molecules[0];
+                    it.storages.clear();
+                    ((it.storages.push_back(&it.current_molecule->compound[typeid(T).hash_code()])),...);
+
                 } else {
                     it.molecule_index = -1;
                     it.entity_index = -1;
@@ -51,19 +56,24 @@ namespace bunshi {
                 
                 size_t max_entities = current_molecule->count();
                 entity_index++;
+                
                 if(entity_index == max_entities) {
-                    molecule_index++;
                     entity_index = 0;
-                    current_molecule = molecules[molecule_index];
-                    if(molecule_index == molecule_count) {
+                    if(molecule_index + 1 == molecule_count) {
                         molecule_index = -1;
                         entity_index = -1;
+                    } else {
+                        molecule_index++;
+                        current_molecule = molecules[molecule_index];
+                        storages.clear();
+                        ((storages.push_back(&current_molecule->compound[typeid(T).hash_code()])),...);
                     }
                 }
             }
 
             std::tuple<Entity, T*...> operator*() {
-                return std::make_tuple(current_molecule->get_entity(entity_index), (T*)current_molecule->get_data<T>(entity_index)...);
+                component_index = 0;
+                return std::make_tuple(current_molecule->get_entity(entity_index), (component_index++, (T*)storages[sizeof...(T) - component_index]->get_component_pointer(entity_index))...);
             }
 
         private:
@@ -71,9 +81,11 @@ namespace bunshi {
             Universe* universe;
             size_t molecule_index;
             size_t entity_index;
+            size_t component_index = 0;
 
             size_t molecule_count = 0;
             Molecule* molecules[1024];
+            std::vector<ComponentStorage*> storages;
             Molecule* current_molecule = nullptr;
     };
 
@@ -234,12 +246,12 @@ namespace bunshi {
 
                 //find molecules
                 for(size_t i = 0; i < molecules.size(); i++) {
-                    if(molecules[i].get_molecule_signature().contains(signature)) {
+                    if(molecules[i].get_molecule_signature().contains(signature) && molecules[i].count() > 0) {
                         iter.molecules[iter.molecule_count] = &molecules[i];
                         iter.molecule_count++;
                     }
                 }
-                
+
                 return iter;
             }
 

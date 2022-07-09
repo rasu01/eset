@@ -91,12 +91,17 @@ bool test_iteration() {
         universe.insert_component<float>(entity, 10.0);
     }
 
+
+    auto start = std::chrono::high_resolution_clock::now();
     size_t count = 0;
     for(auto [entity_id, floating, number] : universe.iterator<float, size_t>()) {
         if(*floating == 10.0 && *number == 100) {
             count += 1;
         }
     }
+    double time = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - start).count();
+    std::cout << "iteration time: " << time << " microseconds\n";
+    
     return count == 1000;
 }
 

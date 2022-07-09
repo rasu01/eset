@@ -108,6 +108,7 @@ namespace bunshi {
         private:
 
             friend Universe;
+            template<typename...> friend class EntityIterator;
 
             //id handling
             size_t local_type_id_counter = 0;
