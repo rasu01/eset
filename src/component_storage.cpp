@@ -11,7 +11,9 @@ ComponentStorage::ComponentStorage(size_t a_component_size) {
 }
 
 ComponentStorage::~ComponentStorage() {
-    free(data);
+    if(size != 0) {
+        free(data); 
+    }
 }
 
 void* ComponentStorage::get_component_pointer(size_t offset) {

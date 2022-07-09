@@ -54,8 +54,8 @@ namespace bunshi {
             void set_component(size_t offset, void* pointer);
 
         private:
-            uint8_t* data;
-            size_t size;
+            uint8_t* data = nullptr;
+            size_t size = 0;
             size_t component_count;
             size_t component_size;
 
