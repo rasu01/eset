@@ -10,7 +10,7 @@ set(CMAKE_CXX_STANDARD 20)
 
 # include files
 include_directories(bunshi 
-    ${CMAKE_SOURCE_DIR}/include/
+    ${PROJECT_SOURCE_DIR}/include/
 )
 
 # add source files
