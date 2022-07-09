@@ -16,10 +16,6 @@ ComponentStorage::~ComponentStorage() {
     }
 }
 
-void* ComponentStorage::get_component_pointer(size_t offset) {
-    return data + offset*component_size;
-}
-
 void ComponentStorage::copy_end(size_t desination_offset) {
     memcpy(data + desination_offset*component_size, data + component_count*component_size, component_size);
 }

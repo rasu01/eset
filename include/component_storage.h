@@ -15,7 +15,14 @@ namespace bunshi {
             /*
                 Get the pointer to a component from an Entity's offset.
             */
-            void* get_component_pointer(size_t offset);
+            inline void* get_component_pointer(size_t& offset) {
+                return data + offset*component_size;
+            }
+
+            template<typename T>
+            inline T* get_templated_pointer(size_t& offset) {
+                return ((T*)data) + offset;
+            }
 
             /*
                 Copies the last component to another offset.

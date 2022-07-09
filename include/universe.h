@@ -2,7 +2,8 @@
 #include <vector>
 #include <string>
 #include <unordered_map>
-#include <map>
+#include <array>
+#include <chrono>
 #include "universe.h"
 #include "molecule.h"
 #include "types.h"
@@ -12,15 +13,14 @@ namespace bunshi {
 
     template<typename... T>
     class EntityIterator {
-
+        
         public:
-            EntityIterator begin() {
+            inline EntityIterator begin() {
+
                 EntityIterator it;
                 it.molecule_index = 0;
                 it.entity_index = 0;
                 it.molecule_count = molecule_count;
-                it.universe = universe;
-                it.component_index = 0;
 
                 //copy molecule pointers
                 for(size_t i = 0; i < molecule_count; i++) {
@@ -29,8 +29,8 @@ namespace bunshi {
 
                 if(molecule_count > 0) {
                     it.current_molecule = molecules[0];
-                    it.storages.clear();
-                    ((it.storages.push_back(&it.current_molecule->compound[typeid(T).hash_code()])),...);
+                    it.component_index = 0;
+                    ((it.component_index++, it.storages[it.component_index-1] = &it.current_molecule->compound[typeid(T).hash_code()]), ...);
 
                 } else {
                     it.molecule_index = -1;
@@ -40,54 +40,56 @@ namespace bunshi {
                 return it;
             }
 
-            EntityIterator end() {
+            inline EntityIterator end() {
                 EntityIterator it;
                 it.molecule_index = -1;
                 it.entity_index = -1;
                 return it;
-            }   
-
-            bool operator!=(EntityIterator& rhs) {
-                bool is_equal = molecule_index == rhs.molecule_index && entity_index == rhs.entity_index;
-                return !is_equal;
             }
 
-            void operator++() {
-                
+            inline bool operator!=(EntityIterator& rhs) {
+                return molecule_index != rhs.molecule_index;
+            }
+
+            inline void operator++() {
+
                 size_t max_entities = current_molecule->count();
                 entity_index++;
-                
+
                 if(entity_index == max_entities) {
                     entity_index = 0;
-                    if(molecule_index + 1 == molecule_count) {
+                    molecule_index++;
+
+                    if(molecule_index == molecule_count) {
                         molecule_index = -1;
                         entity_index = -1;
                     } else {
-                        molecule_index++;
-                        current_molecule = molecules[molecule_index];
-                        storages.clear();
-                        ((storages.push_back(&current_molecule->compound[typeid(T).hash_code()])),...);
+                        current_molecule++;// = molecules[molecule_index];
+                        component_index = 0;
+                        ((component_index++, storages[component_index-1] = &current_molecule->compound[typeid(T).hash_code()]), ...);
                     }
                 }
             }
 
-            std::tuple<Entity, T*...> operator*() {
+            inline std::tuple<Entity, T&...> operator*() {
                 component_index = 0;
-                return std::make_tuple(current_molecule->get_entity(entity_index), (component_index++, (T*)storages[sizeof...(T) - component_index]->get_component_pointer(entity_index))...);
+                return {current_molecule->get_entity(entity_index), (component_index++, *(T*)storages[component_index-1]->get_component_pointer(entity_index))...};
             }
 
         private:
             friend Universe;
-            Universe* universe;
+
+            static size_t counter;
             size_t molecule_index;
             size_t entity_index;
             size_t component_index = 0;
-
             size_t molecule_count = 0;
-            Molecule* molecules[1024];
-            std::vector<ComponentStorage*> storages;
             Molecule* current_molecule = nullptr;
+            ComponentStorage* storages[sizeof...(T)];
+            Molecule* molecules[128];
     };
+
+    template<typename...T> size_t EntityIterator<T...>::counter = 0;
 
     //An ECS collection with all the entites stored inside compounds, that are stored in specific molecules(archetypes).
     class Universe {
@@ -228,7 +230,9 @@ namespace bunshi {
             }
 
             /*
-
+                Returns an iterator based on the 
+                type arguments given. This then iterators over
+                every entity that has these components.
             */
             template<typename... T>
             EntityIterator<T...> iterator() {
@@ -241,7 +245,6 @@ namespace bunshi {
                 EntityIterator<T...> iter;
                 iter.molecule_index = 0;
                 iter.entity_index = 0;
-                iter.universe = this;
                 iter.molecule_count = 0;
 
                 //find molecules
@@ -250,6 +253,16 @@ namespace bunshi {
                         iter.molecules[iter.molecule_count] = &molecules[i];
                         iter.molecule_count++;
                     }
+                }
+
+                if(iter.molecule_count > 0) {
+                    iter.current_molecule = iter.molecules[0];
+                    iter.component_index = 0;
+                    ((iter.component_index++, iter.storages[iter.component_index-1] = &iter.current_molecule->compound[typeid(T).hash_code()]), ...);
+
+                } else {
+                    iter.molecule_index = -1;
+                    iter.entity_index = -1;
                 }
 
                 return iter;
