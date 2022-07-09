@@ -6,4 +6,5 @@ namespace bunshi {
 
     //Entity definition, it's just a size_t
     using Entity = size_t;
+    static const Entity null = 0;
 }

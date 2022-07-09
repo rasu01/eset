@@ -280,7 +280,8 @@ namespace bunshi {
         private:
 
             //counter for all the entites that have been spawned
-            size_t entity_counter = 0;
+            //starts at 1, since 0 is the "null" entity.
+            size_t entity_counter = 1;
 
             //all the molecules
             std::vector<Molecule> molecules;
