@@ -84,41 +84,18 @@ bool test_component_get() {
 bool test_iteration() {
 
     bunshi::Universe universe;
-    std::vector<std::tuple<bunshi::Entity, float, size_t>> test;
 
     for(int i = 0; i < 1000; i++) {
         bunshi::Entity entity = universe.create();
         universe.insert_component<size_t>(entity, 100);
         universe.insert_component<float>(entity, 10.0);
-
-        test.push_back(std::make_tuple(i, 10.0, 100));
     }
 
     size_t count = 0;
-
-    /*while(1) {
-        auto start = std::chrono::high_resolution_clock::now();
-        count = 0;
-        for(auto& [entity_id, floating, number] : test) {
-            if(floating == 10.0 && number == 100) {
-                count += 1;
-            }
+    for(auto [entity_id, floating, number] : universe.iterator<float, size_t>()) {
+        if(floating == 10.0 && number == 100) {
+            count += 1;
         }
-        double time = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - start).count();
-        std::cout << "iteration time: " << time << " : " << count << " nanoseconds\n";
-    }*/
-
-    while(1) {
-        
-        auto start = std::chrono::high_resolution_clock::now();
-        count = 0;
-        for(auto [entity_id, floating, number] : universe.iterator<float, size_t>()) {
-            if(floating == 10.0 && number == 100) {
-                count += 1;
-            }
-        }
-        double time = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - start).count();
-        std::cout << "iteration time: " << time << ":" << count << " nanoseconds\n";
     }
 
     return count == 1000;
