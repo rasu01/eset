@@ -39,7 +39,7 @@ namespace bunshi {
                 to then return that component data
             */
             template<typename T>
-            T* get_component(Entity entity) {
+            inline T* get_component(Entity entity) {
 
                 //get the component index
                 size_t component_index = typeid(T).hash_code();
@@ -76,8 +76,8 @@ namespace bunshi {
                 Returns true if the component exists, false otherwise.
             */
             template<typename T>
-            bool has_component() {
-                
+            inline bool has_component() {
+
                 for(auto& [id, storage] : compound) {
                     if(id == typeid(T).hash_code()) {
                         return true;

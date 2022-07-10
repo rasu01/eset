@@ -75,8 +75,12 @@ bool test_component_get() {
     universe.insert_component<float>(entity, 1024.0);
     universe.insert_component<size_t>(entity, 512);
     
-    float decimal = *universe.get_component<float>(entity);
+    auto start = std::chrono::high_resolution_clock::now();
+    float decimal = *universe.get_component<float>(entity);    
     size_t number = *universe.get_component<size_t>(entity);
+    double time = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - start).count();
+    std::cout << "TOOK " << time << " nanoseconds\n";
+
 
     return number == 512 && decimal == 1024.0;
 }
@@ -128,9 +132,9 @@ int main() {
     run_test(test_single_non_existing_removal, "Removing a nonexisting entity");
     run_test(test_create_entity, "Create entity id check");
     run_test(test_created_exist, "Create entity exist check");
+    run_test(test_component_get, "Insert and get a component from an Entity");
     run_test(test_created_remove, "Create entity and remove");
     run_test(test_entity_and_size_t_id, "size_t and bunshi::Entity type");
-    run_test(test_component_get, "Insert and get a component from an Entity");
     run_test(test_iteration, "Iteration");
     run_test(test_null, "Null");
     run_test(test_copy, "Copy with underlying data");

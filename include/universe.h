@@ -249,9 +249,11 @@ namespace bunshi {
 
                 //find molecules
                 for(size_t i = 0; i < molecules.size(); i++) {
-                    if(molecules[i].get_molecule_signature().contains(signature) && molecules[i].count() > 0) {
-                        iter.molecules[iter.molecule_count] = &molecules[i];
-                        iter.molecule_count++;
+                    if(molecules[i].count() > 0) {
+                        if(molecules[i].get_molecule_signature().contains(signature)) {
+                            iter.molecules[iter.molecule_count] = &molecules[i];
+                            iter.molecule_count++;
+                        }
                     }
                 }
 
