@@ -75,12 +75,8 @@ bool test_component_get() {
     universe.insert_component<float>(entity, 1024.0);
     universe.insert_component<size_t>(entity, 512);
     
-    auto start = std::chrono::high_resolution_clock::now();
     float decimal = *universe.get_component<float>(entity);    
     size_t number = *universe.get_component<size_t>(entity);
-    double time = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - start).count();
-    std::cout << "TOOK " << time << " nanoseconds\n";
-
 
     return number == 512 && decimal == 1024.0;
 }

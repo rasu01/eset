@@ -12,7 +12,7 @@ ComponentStorage::ComponentStorage(size_t a_component_size) {
 
 ComponentStorage::ComponentStorage(ComponentStorage& ot) {
     component_size = ot.component_size;
-    size = ot.component_size;
+    size = ot.size;
     if(size != 0) {
         data = (uint8_t*)malloc(size);
         memcpy(data, ot.data, size);
@@ -22,13 +22,14 @@ ComponentStorage::ComponentStorage(ComponentStorage& ot) {
 
 ComponentStorage::ComponentStorage(ComponentStorage&& ot) {
     component_size = ot.component_size; ot.component_size = 0;
+    size = ot.size; ot.size = 0;
     data = ot.data; ot.data = nullptr;
     component_count = ot.component_count; ot.component_count = 0;
 }
 
 ComponentStorage& ComponentStorage::operator=(const ComponentStorage& ot) {
     component_size = ot.component_size;
-    size = ot.component_size;
+    size = ot.size;
     if(size != 0) {
         data = (uint8_t*)malloc(size);
         memcpy(data, ot.data, size);
@@ -36,7 +37,6 @@ ComponentStorage& ComponentStorage::operator=(const ComponentStorage& ot) {
     component_count = ot.component_count;
     return *this;
 }
-
 
 ComponentStorage::~ComponentStorage() {
     if(size != 0) {
