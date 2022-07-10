@@ -42,7 +42,7 @@ namespace bunshi {
             inline T* get_component(Entity entity) {
 
                 //get the component index
-                size_t component_index = typeid(T).hash_code();
+                size_t component_index = Types::type_id<T>(); 
 
                 //check if the component exist here
                 if(has_component<T>()) {
@@ -77,13 +77,7 @@ namespace bunshi {
             */
             template<typename T>
             inline bool has_component() {
-
-                for(auto& [id, storage] : compound) {
-                    if(id == typeid(T).hash_code()) {
-                        return true;
-                    }
-                }
-                return false;
+                return compound[Types::type_id<T>()].get_component_size() != 0;
             }
 
             /*
@@ -102,7 +96,7 @@ namespace bunshi {
 
             template<typename T>
             inline void* get_data(size_t& offset) {
-                return compound[typeid(T).hash_code()].get_component_pointer(offset);
+                return compound[Types::type_id<T>()].get_component_pointer(offset);
             }
 
         private:
@@ -113,11 +107,12 @@ namespace bunshi {
             //id handling
             size_t local_type_id_counter = 0;
 
-            //the entities' data
-            std::unordered_map<size_t, ComponentStorage> compound;
-
             //these are all the entities that have this molecule type
             std::unordered_map<Entity, size_t> entity_to_offset;
             std::vector<Entity> offset_to_entity;
+
+            //the entities' data
+            std::vector<size_t> compound_indices;
+            ComponentStorage compound[MAX_COMPONENTS];
     };
 }

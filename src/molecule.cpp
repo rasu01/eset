@@ -10,7 +10,8 @@ Molecule::Molecule(MoleculeSignature& signature) {
 
         size_t id = signature.m_ids[i];
         size_t size = signature.m_sizes[i];
-        compound.emplace(id, size);
+        compound[id] = ComponentStorage(size);
+        compound_indices.push_back(id);
     }
 }
 
@@ -21,9 +22,9 @@ void Molecule::remove_entity(Entity entity) {
     size_t offset = entity_to_offset[entity];
 
     //remove all the components and swap end components
-    for(auto& [id, storage] : compound) {
-        storage.copy_end(offset);
-        storage.remove_end();
+    for(size_t id : compound_indices) {
+        compound[id].copy_end(offset);
+        compound[id].remove_end();
     }
 
     //copy the last entity to this entity's offset
@@ -42,8 +43,8 @@ void Molecule::insert_entity(Entity entity) {
     entity_to_offset.emplace(entity, new_offset);
     offset_to_entity.push_back(entity);
 
-    for(auto&[id, storage] : compound) {
-        storage.insert_default_end();
+    for(size_t id : compound_indices) {
+        compound[id].insert_default_end();
     }
 }
 
@@ -51,8 +52,8 @@ MoleculeSignature Molecule::get_molecule_signature() {
     MoleculeSignature signature;
 
     //remove all the components and swap end components
-    for(auto& [id, storage] : compound) {
-        signature.add(id, storage.get_component_size());
+    for(size_t id : compound_indices) {
+        signature.add(id, compound[id].get_component_size());
     }
 
     return signature;

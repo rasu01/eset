@@ -12,6 +12,11 @@ namespace bunshi {
             ComponentStorage(size_t component_size);
             ~ComponentStorage();
 
+            ComponentStorage(ComponentStorage& ot);
+            ComponentStorage(ComponentStorage&& ot);
+
+            ComponentStorage& operator=(const ComponentStorage& oth);
+
             /*
                 Get the pointer to a component from an Entity's offset.
             */

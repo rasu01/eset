@@ -4,12 +4,14 @@
 #include <unordered_map>
 #include <array>
 #include <chrono>
-#include "universe.h"
 #include "molecule.h"
 #include "types.h"
 #include <utility>
 
+
 namespace bunshi {
+
+    class Universe;
 
     template<typename... T>
     class EntityIterator {
@@ -30,7 +32,7 @@ namespace bunshi {
                 if(molecule_count > 0) {
                     it.current_molecule = molecules[0];
                     it.component_index = 0;
-                    ((it.component_index++, it.storages[it.component_index-1] = &it.current_molecule->compound[typeid(T).hash_code()]), ...);
+                    ((it.component_index++, it.storages[it.component_index-1] = &it.current_molecule->compound[Types::type_id<T>()]), ...);
 
                 } else {
                     it.molecule_index = -1;
@@ -66,7 +68,7 @@ namespace bunshi {
                     } else {
                         current_molecule++;// = molecules[molecule_index];
                         component_index = 0;
-                        ((component_index++, storages[component_index-1] = &current_molecule->compound[typeid(T).hash_code()]), ...);
+                        ((component_index++, storages[component_index-1] = &current_molecule->compound[Types::type_id<T>()]), ...);
                     }
                 }
             }
@@ -88,8 +90,6 @@ namespace bunshi {
             ComponentStorage* storages[sizeof...(T)];
             Molecule* molecules[128];
     };
-
-    template<typename...T> size_t EntityIterator<T...>::counter = 0;
 
     //An ECS collection with all the entites stored inside compounds, that are stored in specific molecules(archetypes).
     class Universe {
@@ -139,14 +139,14 @@ namespace bunshi {
                         
                         //then we replace it with the new one that was given
                         size_t offset = current_molecule.entity_to_offset[entity];
-                        ComponentStorage& storage = current_molecule.compound[typeid(T).hash_code()];
+                        ComponentStorage& storage = current_molecule.compound[Types::type_id<T>()];
                         storage.set_templated_component<T>(offset, component);
 
                     } else {
 
                         //it doesn't exist, we need to check if there is a molecule that fits the spec of the new entity
                         MoleculeSignature signature = current_molecule.get_molecule_signature();
-                        signature.add(typeid(T).hash_code(), sizeof(T));
+                        signature.add(Types::type_id<T>(), sizeof(T));
                         size_t molecule_try = find_molecule(signature);
 
                         //couldn't find a molecule, we need to create one and swap with the new one
@@ -162,16 +162,18 @@ namespace bunshi {
                             size_t old_offset = molecules[molecule_index].entity_to_offset[entity];
                             size_t new_offset = new_molecule.entity_to_offset[entity];
 
-                            for(auto& [id, storage] : molecules[molecule_index].compound) {
+                            for(size_t id : molecules[molecule_index].compound_indices) {
+                                ComponentStorage& storage = molecules[molecule_index].compound[id];
                                 void* data = storage.get_component_pointer(old_offset);
-                                new_molecule.compound[id].set_component(new_offset, data);
+                                new_molecule.compound[id].set_component(new_offset, data); 
                             }
 
                             //remove from old molecule
                             molecules[molecule_index].remove_entity(entity);
 
                             //insert the new component
-                            new_molecule.compound[typeid(T).hash_code()].set_templated_component<T>(new_offset, component);
+                            size_t id = Types::type_id<T>();
+                            new_molecule.compound[id].set_templated_component<T>(new_offset, component);
                             
                             //change molecule index since we moved it
                             molecule_index_it->second = new_molecule_index;
@@ -184,7 +186,8 @@ namespace bunshi {
 
                             size_t old_offset = molecules[molecule_index].entity_to_offset[entity];
                             size_t new_offset = new_molecule.entity_to_offset[entity];
-                            for(auto& [id, storage] : molecules[molecule_index].compound) {
+                            for(size_t id : molecules[molecule_index].compound_indices) {
+                                ComponentStorage& storage = molecules[molecule_index].compound[id];
                                 void* data = storage.get_component_pointer(old_offset);
                                 new_molecule.compound[id].set_component(new_offset, data);
                             }
@@ -193,7 +196,8 @@ namespace bunshi {
                             current_molecule.remove_entity(entity);
 
                             //insert the new component
-                            new_molecule.compound[typeid(T).hash_code()].set_templated_component<T>(new_offset, component);
+                            size_t id = Types::type_id<T>();
+                            new_molecule.compound[id].set_templated_component<T>(new_offset, component);
                             
                             //change molecule index since we moved it
                             molecule_index_it->second = molecule_try;
@@ -239,7 +243,7 @@ namespace bunshi {
 
                 //get the type ids
                 MoleculeSignature signature;
-                ((signature.add(typeid(T).hash_code(), sizeof(T))), ...);
+                ((signature.add(Types::type_id<T>(), sizeof(T))), ...);
 
                 //construct iterator
                 EntityIterator<T...> iter;
@@ -267,7 +271,6 @@ namespace bunshi {
                 the largest value. (infinity..?)
             */
             size_t find_molecule(MoleculeSignature& signature);
-
             
         private:
 
