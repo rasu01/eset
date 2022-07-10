@@ -60,6 +60,14 @@ namespace bunshi {
             */
             void set_component(size_t offset, void* pointer);
 
+            /*
+                Uses the copy constructor instead
+            */
+            template<typename T>
+            void set_templated_component(size_t offset, T& component) {
+                *((T*)data + offset) = component;
+            }
+
         private:
             uint8_t* data = nullptr;
             size_t size = 0;

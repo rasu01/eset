@@ -140,7 +140,7 @@ namespace bunshi {
                         //then we replace it with the new one that was given
                         size_t offset = current_molecule.entity_to_offset[entity];
                         ComponentStorage& storage = current_molecule.compound[typeid(T).hash_code()];
-                        storage.set_component(offset, &component);
+                        storage.set_templated_component<T>(offset, component);
 
                     } else {
 
@@ -171,7 +171,7 @@ namespace bunshi {
                             molecules[molecule_index].remove_entity(entity);
 
                             //insert the new component
-                            new_molecule.compound[typeid(T).hash_code()].set_component(new_offset, &component);
+                            new_molecule.compound[typeid(T).hash_code()].set_templated_component<T>(new_offset, component);
                             
                             //change molecule index since we moved it
                             molecule_index_it->second = new_molecule_index;
@@ -193,7 +193,7 @@ namespace bunshi {
                             current_molecule.remove_entity(entity);
 
                             //insert the new component
-                            new_molecule.compound[typeid(T).hash_code()].set_component(new_offset, &component);
+                            new_molecule.compound[typeid(T).hash_code()].set_templated_component<T>(new_offset, component);
                             
                             //change molecule index since we moved it
                             molecule_index_it->second = molecule_try;
