@@ -257,16 +257,6 @@ namespace bunshi {
                     }
                 }
 
-                if(iter.molecule_count > 0) {
-                    iter.current_molecule = iter.molecules[0];
-                    iter.component_index = 0;
-                    ((iter.component_index++, iter.storages[iter.component_index-1] = &iter.current_molecule->compound[typeid(T).hash_code()]), ...);
-
-                } else {
-                    iter.molecule_index = -1;
-                    iter.entity_index = -1;
-                }
-
                 return iter;
             }
 
