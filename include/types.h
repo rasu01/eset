@@ -5,7 +5,7 @@
 namespace bunshi {
 
     //Entity definition, it's just a size_t
-    #define MAX_COMPONENTS 1024
+    #define MAX_COMPONENTS 256
     using Entity = size_t;
     static const Entity null = 0;
 

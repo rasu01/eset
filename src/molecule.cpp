@@ -59,6 +59,14 @@ MoleculeSignature Molecule::get_molecule_signature() {
     return signature;
 }
 
+FastSignature Molecule::get_fast_signature() {
+    FastSignature sign;
+    for(size_t id : compound_indices) {
+        sign.add(id);
+    }
+    return sign;
+}
+
 //signature functions
 size_t MoleculeSignature::count() {
     return m_count;

@@ -242,8 +242,11 @@ namespace bunshi {
             EntityIterator<T...> iterator() {
 
                 //get the type ids
-                MoleculeSignature signature;
-                ((signature.add(Types::type_id<T>(), sizeof(T))), ...);
+                //MoleculeSignature signature;
+                //((signature.add(Types::type_id<T>(), sizeof(T))), ...);
+
+                FastSignature sign;
+                ((sign.add(Types::type_id<T>())), ...);
 
                 //construct iterator
                 EntityIterator<T...> iter;
@@ -254,12 +257,21 @@ namespace bunshi {
                 //find molecules
                 for(size_t i = 0; i < molecules.size(); i++) {
                     if(molecules[i].count() > 0) {
-                        if(molecules[i].get_molecule_signature().contains(signature)) {
+                        if(molecules[i].get_fast_signature().contains(sign)) {
                             iter.molecules[iter.molecule_count] = &molecules[i];
                             iter.molecule_count++;
                         }
                     }
                 }
+
+                /*for(size_t i = 0; i < molecules.size(); i++) {
+                    if(molecules[i].count() > 0) {
+                        if(molecules[i].get_molecule_signature().contains(signature)) {
+                            iter.molecules[iter.molecule_count] = &molecules[i];
+                            iter.molecule_count++;
+                        }
+                    }
+                }*/
 
                 return iter;
             }
