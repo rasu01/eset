@@ -12,6 +12,7 @@ Molecule::Molecule(MoleculeSignature& signature) {
         size_t size = signature.m_sizes[i];
         compound[id] = ComponentStorage(size);
         compound_indices.push_back(id);
+        fast_signature.add(id);
     }
 }
 
@@ -60,11 +61,7 @@ MoleculeSignature Molecule::get_molecule_signature() {
 }
 
 FastSignature Molecule::get_fast_signature() {
-    FastSignature sign;
-    for(size_t id : compound_indices) {
-        sign.add(id);
-    }
-    return sign;
+    return fast_signature;
 }
 
 //signature functions

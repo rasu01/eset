@@ -91,6 +91,7 @@ namespace bunshi {
             Molecule* molecules[128];
     };
 
+
     //An ECS collection with all the entites stored inside compounds, that are stored in specific molecules(archetypes).
     class Universe {
         public:

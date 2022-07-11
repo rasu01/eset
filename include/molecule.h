@@ -45,11 +45,11 @@ namespace bunshi {
 
             inline bool contains(FastSignature& other) {
                 if(m_count < other.m_count) {
-                        return false;
+                    return false;
                 }
 
                 for(size_t i = 0; i < MAX_COMPONENTS / 8; i++) {
-                    if(m_ids[i] & other.m_ids[i] != m_ids[i]) {
+                    if((m_ids[i] & other.m_ids[i]) != other.m_ids[i]) {
                         return false;
                     }
                 }
@@ -57,8 +57,6 @@ namespace bunshi {
             }
 
         private:
-            friend Molecule;
-
             size_t m_count = 0;
             uint8_t m_ids[MAX_COMPONENTS / 8];
 
@@ -154,5 +152,6 @@ namespace bunshi {
             //the entities' data
             std::vector<size_t> compound_indices;
             ComponentStorage compound[MAX_COMPONENTS];
+            FastSignature fast_signature;
     };
 }
