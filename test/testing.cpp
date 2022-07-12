@@ -102,7 +102,7 @@ bool test_iteration() {
         universe.insert_component<bool>(ent, false);
     }
 
-    for(int i = 0; i < 10; i++) {
+    for(int i = 0; i < 1; i++) {
         bunshi::Entity entity = universe.create();
         Position pos = {0.0, 0.0};
         Unit unit = {"yo"};

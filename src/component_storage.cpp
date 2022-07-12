@@ -45,7 +45,7 @@ ComponentStorage::~ComponentStorage() {
 }
 
 void ComponentStorage::copy_end(size_t desination_offset) {
-    memcpy(data + desination_offset*component_size, data + component_count*component_size, component_size);
+    memcpy(data + desination_offset*component_size, data + (component_count-1)*component_size, component_size);
 }
 
 void ComponentStorage::insert_end(void* pointer) {
