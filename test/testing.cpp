@@ -123,6 +123,25 @@ bool test_copy() {
     return universe.get_component<TestComponent>(entity)->string == "Testing to construct a new string here!!";
 }
 
+struct TestComponent {
+    static int cnt;
+    TestComponent() = default;
+    ~TestComponent() {cnt++;}
+};
+int TestComponent::cnt = 0;
+
+bool test_destructor() {
+
+    bunshi::Universe universe;
+
+    bunshi::Entity entity = universe.create();
+    universe.insert_component<TestComponent>(entity, TestComponent());
+
+    universe.remove(entity);
+
+    return TestComponent::cnt == 2;
+}
+
 int main() {
 
     run_test(test_single_non_existing_removal, "Removing a nonexisting entity");
@@ -134,6 +153,7 @@ int main() {
     run_test(test_iteration, "Iteration");
     run_test(test_null, "Null");
     run_test(test_copy, "Copy with underlying data");
+    run_test(test_destructor, "Running destructor at remove");
 
     //print all the results
     std::cout << "Tests: " << total << "; Passes: " << successes << "; Fails: " << fails << "\n";
