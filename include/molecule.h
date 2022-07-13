@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <vector>
 #include <array>
+#include <cstring>
 
 namespace bunshi {
 
@@ -24,6 +25,41 @@ namespace bunshi {
             size_t m_count = 0;
             size_t m_ids[32];
             size_t m_sizes[32];
+    };
+
+    class FastSignature {
+
+        public:
+            FastSignature() {
+                memset(m_ids, 0, MAX_COMPONENTS/8);
+            };
+            
+            size_t count();
+            
+            inline void add(size_t id) {
+                size_t segment = id / 8;
+                size_t rest = id - (segment*8);
+                m_ids[segment] = m_ids[segment] | (1 << rest);
+                m_count++;
+            }
+
+            inline bool contains(FastSignature& other) {
+                if(m_count < other.m_count) {
+                    return false;
+                }
+
+                for(size_t i = 0; i < MAX_COMPONENTS / 8; i++) {
+                    if((m_ids[i] & other.m_ids[i]) != other.m_ids[i]) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+
+        private:
+            size_t m_count = 0;
+            uint8_t m_ids[MAX_COMPONENTS / 8];
+
     };
 
     //A molecule is in ECS terms just an archetype. It's definitions is just the types of components used.
@@ -49,7 +85,7 @@ namespace bunshi {
 
                     //the component did exist! Return it.
                     size_t offset = entity_to_offset[entity];
-                    return (T*)compound[component_index].get_component_pointer(offset);
+                    return compound[component_index].get_templated_pointer<T>(offset);
                 } else {
                     
                     //the component doesn't exist, return nullptr.
@@ -86,6 +122,8 @@ namespace bunshi {
             */
             MoleculeSignature get_molecule_signature();
 
+            FastSignature get_fast_signature();
+
             inline size_t count() {
                 return offset_to_entity.size();
             }
@@ -114,5 +152,6 @@ namespace bunshi {
             //the entities' data
             std::vector<size_t> compound_indices;
             ComponentStorage compound[MAX_COMPONENTS];
+            FastSignature fast_signature;
     };
 }

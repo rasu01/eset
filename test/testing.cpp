@@ -22,7 +22,6 @@ void run_test(std::function<bool()> test_function, std::string&& test_name) {
 
     auto start = std::chrono::high_resolution_clock::now();
     bool result = test_function();
-    double time = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - start).count();
 
     std::cout << "[" << ++total << "] " << test_name;
     if(result) {
@@ -85,17 +84,44 @@ bool test_iteration() {
 
     bunshi::Universe universe;
 
-    for(int i = 0; i < 1000; i++) {
+    struct Position {
+        float x;
+        float y;
+    };
+
+    struct Unit {
+        std::string name;
+    };
+
+    for(int i = 0; i < 1000000; i++) {
+        bunshi::Entity ent = universe.create();
+        universe.insert_component<float>(ent, 1.0f);
+        universe.insert_component<std::string>(ent, "hej");
+        universe.insert_component<double>(ent, 1.0);
+        universe.insert_component<size_t>(ent, 100);
+        universe.insert_component<bool>(ent, false);
+    }
+
+    for(int i = 0; i < 1; i++) {
         bunshi::Entity entity = universe.create();
-        universe.insert_component<size_t>(entity, 100);
-        universe.insert_component<float>(entity, 10.0);
+        Position pos = {0.0, 0.0};
+        Unit unit = {"yo"};
+        universe.insert_component<Position>(entity, pos);
+        universe.insert_component<Unit>(entity, unit);
+        universe.insert_component<float>(entity, 1.0);
     }
 
     size_t count = 0;
-    for(auto [entity_id, floating, number] : universe.iterator<float, size_t>()) {
-        if(floating == 10.0 && number == 100) {
-            count += 1;
+    while(1) {
+        auto start = std::chrono::steady_clock::now();
+        count = 0;
+        for(auto [entity_id, pos, unit] : universe.iterator<Position, Unit>()) {
+            if(pos.x == 0.0) {
+                count++;
+            }
         }
+        double time = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - start).count();
+        std::cout << "time " << time << ": " << count << " nanoseconds\n";
     }
 
     return count == 1000;
