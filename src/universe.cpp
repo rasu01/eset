@@ -5,8 +5,8 @@ using namespace bunshi;
 Universe::Universe() {
 
     //create an empty archetype, so we can assign newly created entities to it
-    molecules.push_back(Molecule());
-}
+    molecules.emplace_back();
+} 
 
 bool Universe::remove(Entity entity) {
     auto molecule_index_it = entities.find(entity);

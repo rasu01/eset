@@ -143,11 +143,12 @@ int TestComponent::cnt = 0;
 
 bool test_destructor() {
 
-    bunshi::Universe universe;
-
-    bunshi::Entity entity = universe.create();
-    universe.insert_component<TestComponent>(entity, TestComponent());
-    universe.remove(entity);
+    {
+        bunshi::Universe universe;
+        bunshi::Entity entity = universe.create();
+        universe.insert_component<TestComponent>(entity, TestComponent());
+        //<--- should delete all the components when the universe goes out of scope!
+    }
 
     return TestComponent::cnt == 0;
 }

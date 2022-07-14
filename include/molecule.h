@@ -35,6 +35,10 @@ namespace bunshi {
             };
             
             size_t count();
+
+            inline void clear() {
+                memset(m_ids, 0, MAX_COMPONENTS/8);
+            }
             
             inline void add(size_t id) {
                 size_t segment = id / 8;
@@ -67,8 +71,18 @@ namespace bunshi {
     class Molecule {
         public:
 
-            Molecule() = default;
-            Molecule(std::vector<BaseStorage*> storage_pointers);
+            Molecule();
+            Molecule(std::vector<BaseStorage*>& storage_pointers);
+            ~Molecule();
+
+            /*
+                Move constructor. Needed since 
+                emplace_back might reallocate if the
+                capacity is too low. And we don't want
+                to delete a molecule twice(because of copying) with the same
+                component storages.. we want to copy it.
+            */
+            Molecule(Molecule&& other);
 
             /*
                 Provides an entity index and a type argument
@@ -146,16 +160,12 @@ namespace bunshi {
             friend Universe;
             template<typename...> friend class EntityIterator;
 
-            //id handling
-            size_t local_type_id_counter = 0;
-
             //these are all the entities that have this molecule type
             std::unordered_map<Entity, size_t> entity_to_offset;
             std::vector<Entity> offset_to_entity;
 
             //the entities' data
             std::vector<size_t> compound_indices;
-            //ComponentStorage compound[MAX_COMPONENTS];
             BaseStorage* compound[MAX_COMPONENTS];
             FastSignature fast_signature;
     };

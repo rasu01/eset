@@ -63,6 +63,14 @@ namespace bunshi {
             */
             virtual BaseStorage* make_empty_copy() = 0;
 
+            /*
+                Default destructor. Marked virtual 
+                since we want the C++ compiler to choose
+                the derived destructor. Not this base class'
+                destructor.
+            */
+            virtual ~BaseStorage() = default;
+
         private:
     };
 

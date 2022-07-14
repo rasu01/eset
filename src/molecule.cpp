@@ -4,13 +4,40 @@
 
 using namespace bunshi;
 
-Molecule::Molecule(std::vector<BaseStorage*> storage_pointers) {
+Molecule::Molecule() {
+    for(size_t i = 0; i < MAX_COMPONENTS; i++) {
+        compound[i] = nullptr;
+    }
+}
+
+Molecule::Molecule(Molecule&& other) {
+    entity_to_offset = std::move(other.entity_to_offset);
+    offset_to_entity = std::move(other.offset_to_entity);
+    compound_indices = std::move(other.compound_indices);
+    for(size_t compound_id : compound_indices) {
+        compound[compound_id] = other.compound[compound_id];
+        other.compound[compound_id] = nullptr;
+    }
+    fast_signature = other.fast_signature;
+    other.fast_signature.clear();
+}
+
+Molecule::Molecule(std::vector<BaseStorage*>& storage_pointers) {
 
     for(BaseStorage* storage : storage_pointers) {
         size_t id = storage->get_component_type_id();
         compound[id] = storage;
         compound_indices.push_back(id);
         fast_signature.add(id);
+    }
+}
+
+Molecule::~Molecule() {
+
+    //Remove all the compounds.
+    for(size_t compound_index : compound_indices) {
+        delete compound[compound_index];
+        compound[compound_index] = nullptr;
     }
 }
 

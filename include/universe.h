@@ -157,13 +157,14 @@ namespace bunshi {
 
                             //get the signatures
                             std::vector<BaseStorage*> storage_pointers;
-                            for(size_t id : current_molecule.compound_indices) {
-                                storage_pointers.push_back(current_molecule.compound[id]->make_empty_copy());                        
+                            for(size_t i = 0; i < current_molecule.compound_indices.size(); i++) {
+                                //std::cout << i << "\n";
+                                BaseStorage* copy = current_molecule.compound[current_molecule.compound_indices[i]]->make_empty_copy();
+                                storage_pointers.push_back(copy);
                             }
                             BaseStorage* new_storage = new ComponentStorage<T>();
                             storage_pointers.push_back(new_storage);
                             molecules.emplace_back(storage_pointers);
-
 
                             //swap
                             Molecule& new_molecule = molecules[new_molecule_index];
