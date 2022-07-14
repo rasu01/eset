@@ -68,7 +68,7 @@ namespace bunshi {
         public:
 
             Molecule() = default;
-            Molecule(MoleculeSignature& signature);
+            Molecule(std::vector<BaseStorage*> storage_pointers);
 
             /*
                 Provides an entity index and a type argument
@@ -85,7 +85,7 @@ namespace bunshi {
 
                     //the component did exist! Return it.
                     size_t offset = entity_to_offset[entity];
-                    return compound[component_index].get_templated_pointer<T>(offset);
+                    return (T*)(compound[component_index]->get_component_pointer(offset));
                 } else {
                     
                     //the component doesn't exist, return nullptr.
@@ -113,7 +113,11 @@ namespace bunshi {
             */
             template<typename T>
             inline bool has_component() {
-                return compound[Types::type_id<T>()].get_component_size() != 0;
+                if(compound[Types::type_id<T>()]) {
+                    return compound[Types::type_id<T>()]->get_component_size() != 0;
+                } else {
+                    return false;
+                }
             }
 
             /*
@@ -134,7 +138,7 @@ namespace bunshi {
 
             template<typename T>
             inline void* get_data(size_t& offset) {
-                return compound[Types::type_id<T>()].get_component_pointer(offset);
+                return compound[Types::type_id<T>()]->get_component_pointer(offset);
             }
 
         private:
@@ -151,7 +155,8 @@ namespace bunshi {
 
             //the entities' data
             std::vector<size_t> compound_indices;
-            ComponentStorage compound[MAX_COMPONENTS];
+            //ComponentStorage compound[MAX_COMPONENTS];
+            BaseStorage* compound[MAX_COMPONENTS];
             FastSignature fast_signature;
     };
 }

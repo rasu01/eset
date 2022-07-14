@@ -22,6 +22,7 @@ void run_test(std::function<bool()> test_function, std::string&& test_name) {
 
     auto start = std::chrono::high_resolution_clock::now();
     bool result = test_function();
+    float time = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - start).count();
 
     std::cout << "[" << ++total << "] " << test_name;
     if(result) {
@@ -126,8 +127,8 @@ bool test_copy() {
     {
         TestComponent tc;
         tc.string = "Testing to construct a new string here!!";
-        universe.insert_component<TestComponent>(entity, tc);
         universe.insert_component<float>(entity, 10.0);
+        universe.insert_component<TestComponent>(entity, tc);
     }
 
     return universe.get_component<TestComponent>(entity)->string == "Testing to construct a new string here!!";
@@ -135,8 +136,8 @@ bool test_copy() {
 
 struct TestComponent {
     static int cnt;
-    TestComponent() = default;
-    ~TestComponent() {cnt++;}
+    TestComponent() {cnt++; }
+    ~TestComponent() {cnt--; }
 };
 int TestComponent::cnt = 0;
 
@@ -146,10 +147,9 @@ bool test_destructor() {
 
     bunshi::Entity entity = universe.create();
     universe.insert_component<TestComponent>(entity, TestComponent());
-
     universe.remove(entity);
 
-    return TestComponent::cnt == 2;
+    return TestComponent::cnt == 0;
 }
 
 int main() {

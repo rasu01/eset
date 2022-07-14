@@ -32,7 +32,7 @@ namespace bunshi {
                 if(molecule_count > 0) {
                     it.current_molecule = molecules[0];
                     it.component_index = 0;
-                    ((it.component_index++, it.storages[it.component_index-1] = &it.current_molecule->compound[Types::type_id<T>()]), ...);
+                    ((it.component_index++, it.storages[it.component_index-1] = it.current_molecule->compound[Types::type_id<T>()]), ...);
 
                 } else {
                     it.molecule_index = -1;
@@ -68,7 +68,7 @@ namespace bunshi {
                     } else {
                         current_molecule++;// = molecules[molecule_index];
                         component_index = 0;
-                        ((component_index++, storages[component_index-1] = &current_molecule->compound[Types::type_id<T>()]), ...);
+                        ((component_index++, storages[component_index-1] = current_molecule->compound[Types::type_id<T>()]), ...);
                     }
                 }
             }
@@ -87,7 +87,7 @@ namespace bunshi {
             size_t component_index = 0;
             size_t molecule_count = 0;
             Molecule* current_molecule = nullptr;
-            ComponentStorage* storages[sizeof...(T)];
+            BaseStorage* storages[sizeof...(T)];
             Molecule* molecules[128];
     };
 
@@ -140,8 +140,8 @@ namespace bunshi {
                         
                         //then we replace it with the new one that was given
                         size_t offset = current_molecule.entity_to_offset[entity];
-                        ComponentStorage& storage = current_molecule.compound[Types::type_id<T>()];
-                        storage.set_templated_component<T>(offset, component);
+                        BaseStorage* storage = current_molecule.compound[Types::type_id<T>()];
+                        storage->set_component(offset, &component);
 
                     } else {
 
@@ -154,7 +154,16 @@ namespace bunshi {
                         if(molecule_try == -1) {
 
                             size_t new_molecule_index = molecules.size();
-                            molecules.emplace_back(signature);
+
+                            //get the signatures
+                            std::vector<BaseStorage*> storage_pointers;
+                            for(size_t id : current_molecule.compound_indices) {
+                                storage_pointers.push_back(current_molecule.compound[id]->make_empty_copy());                        
+                            }
+                            BaseStorage* new_storage = new ComponentStorage<T>();
+                            storage_pointers.push_back(new_storage);
+                            molecules.emplace_back(storage_pointers);
+
 
                             //swap
                             Molecule& new_molecule = molecules[new_molecule_index];
@@ -164,9 +173,9 @@ namespace bunshi {
                             size_t new_offset = new_molecule.entity_to_offset[entity];
 
                             for(size_t id : molecules[molecule_index].compound_indices) {
-                                ComponentStorage& storage = molecules[molecule_index].compound[id];
-                                void* data = storage.get_component_pointer(old_offset);
-                                new_molecule.compound[id].set_component(new_offset, data); 
+                                BaseStorage* storage = molecules[molecule_index].compound[id];
+                                void* data = storage->get_component_pointer(old_offset);
+                                new_molecule.compound[id]->set_component(new_offset, data); 
                             }
 
                             //remove from old molecule
@@ -174,7 +183,7 @@ namespace bunshi {
 
                             //insert the new component
                             size_t id = Types::type_id<T>();
-                            new_molecule.compound[id].set_templated_component<T>(new_offset, component);
+                            new_molecule.compound[id]->set_component(new_offset, &component);
                             
                             //change molecule index since we moved it
                             molecule_index_it->second = new_molecule_index;
@@ -188,9 +197,9 @@ namespace bunshi {
                             size_t old_offset = molecules[molecule_index].entity_to_offset[entity];
                             size_t new_offset = new_molecule.entity_to_offset[entity];
                             for(size_t id : molecules[molecule_index].compound_indices) {
-                                ComponentStorage& storage = molecules[molecule_index].compound[id];
-                                void* data = storage.get_component_pointer(old_offset);
-                                new_molecule.compound[id].set_component(new_offset, data);
+                                BaseStorage* storage = molecules[molecule_index].compound[id];
+                                void* data = storage->get_component_pointer(old_offset);
+                                new_molecule.compound[id]->set_component(new_offset, data);
                             }
 
                             //remove from old molecule
@@ -198,7 +207,7 @@ namespace bunshi {
 
                             //insert the new component
                             size_t id = Types::type_id<T>();
-                            new_molecule.compound[id].set_templated_component<T>(new_offset, component);
+                            new_molecule.compound[id]->set_component(new_offset, &component);
                             
                             //change molecule index since we moved it
                             molecule_index_it->second = molecule_try;

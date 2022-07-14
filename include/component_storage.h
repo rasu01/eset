@@ -1,88 +1,113 @@
 #pragma once
 #include "types.h"
 #include <iostream>
+#include <vector>
 
 namespace bunshi {
 
-    //a stack based strorage container used for a single component inside a molecule
-    class ComponentStorage {
+    class BaseStorage {
         public:
-
-            ComponentStorage() = default;
-            ComponentStorage(size_t component_size);
-            ~ComponentStorage();
-
-            ComponentStorage(ComponentStorage& ot);
-            ComponentStorage(ComponentStorage&& ot);
-
-            ComponentStorage& operator=(const ComponentStorage& oth);
-
+        
             /*
                 Get the pointer to a component from an Entity's offset.
             */
-            inline void* get_component_pointer(size_t& offset) {
-                return data + offset*component_size;
-            }
-
-            template<typename T>
-            inline T* get_templated_pointer(size_t& offset) {
-                return ((T*)data) + offset;
-            }
+            virtual void* get_component_pointer(size_t& offset) = 0;
 
             /*
                 Copies the last component to another offset.
                 Very useful when removing an entity's components from one
                 molecule(archetype).
             */
-            void copy_end(size_t desination_offset);
-
-            /*
-                Inserts data from a component into the storage at the end.
-            */
-            void insert_end(void* pointer);
-
-            /*
-                Inserts default data(zeros) at the end of the storage
-            */
-            void insert_default_end();
-
-            /*
-                Removes the last component.
-                In reality, it just decreases the component_count by one.
-            */
-            void remove_end();
+            virtual void copy_from_end(size_t destination_offset) = 0;
 
             /*
                 Returns the size in bytes of this
                 component storage's component!
             */
-            size_t get_component_size();
+            virtual size_t get_component_size() = 0;
+
+            /*
+                Returns the type id of this component
+                storage's component type.
+            */
+            virtual size_t get_component_type_id() = 0;
+
+            /*
+                Returns the amount of components inside this
+                storage.
+            */
+            virtual size_t get_component_count() = 0;
+
+            /*
+                Inserts default data bat the end of the storage.
+                Basically emplaces the default constructor at the end.
+            */
+            virtual void insert_default_end() = 0;
 
             /*
                 Copies data from data pointer to
                 the given offset. This keeps the
                 size of the storage.
             */
-            void set_component(size_t offset, void* pointer);
+            virtual void set_component(size_t offset, void* data_pointer) = 0;
 
             /*
-                Uses the copy constructor instead
+                Removes the last component.
+                In reality, it just decreases the component_count by one.
             */
-            template<typename T>
-            void set_templated_component(size_t offset, T& component) {
-                *((T*)data + offset) = component;
+            virtual void remove_end() = 0;
+
+            /*
+                Makes a copy of a component storage.
+                The copy is completely empty.
+            */
+            virtual BaseStorage* make_empty_copy() = 0;
+
+        private:
+    };
+
+    template<typename ComponentType>
+    class ComponentStorage : public BaseStorage {
+
+        public:
+            void* get_component_pointer(size_t& offset) {
+                return &components[offset];
+            }
+
+            void copy_from_end(size_t destination_offset) {
+                components[destination_offset] = components.back();
+                //std::swap(components[destination_offset], components.back());
+            }
+
+            size_t get_component_size() {
+                return sizeof(ComponentType);
+            }
+
+            size_t get_component_count() {
+                return components.size();
+            }
+
+            size_t get_component_type_id() {
+                return Types::type_id<ComponentType>();
+            }
+
+            void insert_default_end() {
+                components.emplace_back();
+            }
+
+            void set_component(size_t offset, void* data_pointer) {
+                components[offset] = *(ComponentType*)data_pointer;
+            }
+
+            void remove_end() {
+                components.pop_back();
+            }
+
+            BaseStorage* make_empty_copy() {
+                return new ComponentStorage<ComponentType>();
             }
 
         private:
-            uint8_t* data = nullptr;
-            size_t size = 0;
-            size_t component_count;
-            size_t component_size;
-
-            /*
-                //Resizes the data storage if more space is needed.
-                It will double the space used.
-            */
-            void resize();
+            std::vector<ComponentType> components;
     };
 }

@@ -4,13 +4,11 @@
 
 using namespace bunshi;
 
-Molecule::Molecule(MoleculeSignature& signature) {
+Molecule::Molecule(std::vector<BaseStorage*> storage_pointers) {
 
-    for(size_t i = 0; i < signature.count(); i++) {
-
-        size_t id = signature.m_ids[i];
-        size_t size = signature.m_sizes[i];
-        compound[id] = ComponentStorage(size);
+    for(BaseStorage* storage : storage_pointers) {
+        size_t id = storage->get_component_type_id();
+        compound[id] = storage;
         compound_indices.push_back(id);
         fast_signature.add(id);
     }
@@ -26,7 +24,7 @@ void Molecule::remove_entity(Entity entity) {
     if(offset == offset_to_entity.size() - 1) {
         //remove all the components and swap end components
         for(size_t id : compound_indices) {
-            compound[id].remove_end();
+            compound[id]->remove_end();
         }
         entity_to_offset.erase(entity);
         offset_to_entity.pop_back();
@@ -35,8 +33,8 @@ void Molecule::remove_entity(Entity entity) {
 
         //remove all the components and swap end components
         for(size_t id : compound_indices) {
-            compound[id].copy_end(offset);
-            compound[id].remove_end();
+            compound[id]->copy_from_end(offset);
+            compound[id]->remove_end();
         }
 
         //copy the last entity to this entity's offset
@@ -57,7 +55,7 @@ void Molecule::insert_entity(Entity entity) {
     offset_to_entity.push_back(entity);
 
     for(size_t id : compound_indices) {
-        compound[id].insert_default_end();
+        compound[id]->insert_default_end();
     }
 }
 
@@ -66,7 +64,7 @@ MoleculeSignature Molecule::get_molecule_signature() {
 
     //remove all the components and swap end components
     for(size_t id : compound_indices) {
-        signature.add(id, compound[id].get_component_size());
+        signature.add(id, compound[id]->get_component_size());
     }
 
     return signature;
