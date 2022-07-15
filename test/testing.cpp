@@ -136,8 +136,10 @@ bool test_copy() {
 
 struct TestComponent {
     static int cnt;
-    TestComponent() {cnt++; }
-    ~TestComponent() {cnt--; }
+    TestComponent() {cnt++;}
+    TestComponent& operator=(const TestComponent& other) {cnt++; return *this;};
+    TestComponent(const TestComponent& other) {cnt++;};
+    ~TestComponent() {cnt--;}
 };
 int TestComponent::cnt = 0;
 
@@ -147,6 +149,7 @@ bool test_destructor() {
         bunshi::Universe universe;
         bunshi::Entity entity = universe.create();
         universe.insert_component<TestComponent>(entity, TestComponent());
+        universe.insert_component<float>(entity, 0.0f);
         //<--- should delete all the components when the universe goes out of scope!
     }
 

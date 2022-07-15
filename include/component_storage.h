@@ -14,11 +14,11 @@ namespace bunshi {
             virtual void* get_component_pointer(size_t& offset) = 0;
 
             /*
-                Copies the last component to another offset.
+                Moves the last component to another offset.
                 Very useful when removing an entity's components from one
-                molecule(archetype).
+                molecule(archetype). 
             */
-            virtual void copy_from_end(size_t destination_offset) = 0;
+            virtual void move_from_end(size_t destination_offset) = 0;
 
             /*
                 Returns the size in bytes of this
@@ -39,13 +39,12 @@ namespace bunshi {
             virtual size_t get_component_count() = 0;
 
             /*
-                Inserts default data bat the end of the storage.
-                Basically emplaces the default constructor at the end.
+                Inserts data at the end of the storage.
             */
-            virtual void insert_default_end() = 0;
+            virtual void push_back(void* pointer) = 0;
 
             /*
-                Copies data from data pointer to
+                Moves data from data pointer to
                 the given offset. This keeps the
                 size of the storage.
             */
@@ -82,9 +81,8 @@ namespace bunshi {
                 return &components[offset];
             }
 
-            void copy_from_end(size_t destination_offset) {
-                components[destination_offset] = components.back();
-                //std::swap(components[destination_offset], components.back());
+            void move_from_end(size_t destination_offset) {
+                components[destination_offset] = std::move(components.back());
             }
 
             size_t get_component_size() {
@@ -98,13 +96,13 @@ namespace bunshi {
             size_t get_component_type_id() {
                 return Types::type_id<ComponentType>();
             }
-
-            void insert_default_end() {
-                components.emplace_back();
+            
+            void push_back(void* pointer) {
+                components.push_back(*(ComponentType*)pointer);
             }
 
             void set_component(size_t offset, void* data_pointer) {
-                components[offset] = *(ComponentType*)data_pointer;
+                components[offset] = std::move(*(ComponentType*)data_pointer);
             }
 
             void remove_end() {

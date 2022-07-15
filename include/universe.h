@@ -176,7 +176,7 @@ namespace bunshi {
                             for(size_t id : molecules[molecule_index].compound_indices) {
                                 BaseStorage* storage = molecules[molecule_index].compound[id];
                                 void* data = storage->get_component_pointer(old_offset);
-                                new_molecule.compound[id]->set_component(new_offset, data); 
+                                new_molecule.compound[id]->push_back(data); 
                             }
 
                             //remove from old molecule
@@ -184,7 +184,7 @@ namespace bunshi {
 
                             //insert the new component
                             size_t id = Types::type_id<T>();
-                            new_molecule.compound[id]->set_component(new_offset, &component);
+                            new_molecule.compound[id]->push_back(&component);
                             
                             //change molecule index since we moved it
                             molecule_index_it->second = new_molecule_index;
@@ -200,7 +200,7 @@ namespace bunshi {
                             for(size_t id : molecules[molecule_index].compound_indices) {
                                 BaseStorage* storage = molecules[molecule_index].compound[id];
                                 void* data = storage->get_component_pointer(old_offset);
-                                new_molecule.compound[id]->set_component(new_offset, data);
+                                new_molecule.compound[id]->push_back(data);
                             }
 
                             //remove from old molecule
@@ -208,7 +208,7 @@ namespace bunshi {
 
                             //insert the new component
                             size_t id = Types::type_id<T>();
-                            new_molecule.compound[id]->set_component(new_offset, &component);
+                            new_molecule.compound[id]->push_back(&component);
                             
                             //change molecule index since we moved it
                             molecule_index_it->second = molecule_try;
@@ -222,6 +222,11 @@ namespace bunshi {
                     return false;
                 }
             }
+
+            template<typename T, typename... Args>
+            void emplace_component(Args&&... args) {
+
+            } 
 
             /*
                 Tries to return a reference to a component
@@ -241,6 +246,30 @@ namespace bunshi {
 
                     //else return nullptr, since the entity doesn't exist
                     return nullptr;
+                }
+            }
+
+            /*
+                Tries to return multiple pointers
+                to multiple components. This is 
+                more efficient than using get_component
+                multiple times in a row to get different
+                components from a single entity. 
+            */
+            template<typename... Ts>
+            std::tuple<Ts*...> get_components(Entity entity) {
+                //check if it exists
+                auto molecule_index_it = entities.find(entity);
+                if(molecule_index_it != entities.end()) {
+
+                    //if it does, return the component from the molecule
+                    size_t molecule_index = molecule_index_it->second;
+                    Molecule* molecule = &molecules[molecule_index];
+                    return {(molecule->get_component<Ts>(entity))...};
+                } else {
+
+                    //else return nullptr, since the entity doesn't exist
+                    return {((Ts*)nullptr)...};
                 }
             }
 

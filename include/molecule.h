@@ -71,7 +71,7 @@ namespace bunshi {
     class Molecule {
         public:
 
-            Molecule();
+            Molecule() = default;
             Molecule(std::vector<BaseStorage*>& storage_pointers);
             ~Molecule();
 

@@ -4,12 +4,6 @@
 
 using namespace bunshi;
 
-Molecule::Molecule() {
-    for(size_t i = 0; i < MAX_COMPONENTS; i++) {
-        compound[i] = nullptr;
-    }
-}
-
 Molecule::Molecule(Molecule&& other) {
     entity_to_offset = std::move(other.entity_to_offset);
     offset_to_entity = std::move(other.offset_to_entity);
@@ -60,7 +54,7 @@ void Molecule::remove_entity(Entity entity) {
 
         //remove all the components and swap end components
         for(size_t id : compound_indices) {
-            compound[id]->copy_from_end(offset);
+            compound[id]->move_from_end(offset);
             compound[id]->remove_end();
         }
 
@@ -81,9 +75,9 @@ void Molecule::insert_entity(Entity entity) {
     entity_to_offset.emplace(entity, new_offset);
     offset_to_entity.push_back(entity);
 
-    for(size_t id : compound_indices) {
+    /*for(size_t id : compound_indices) {
         compound[id]->insert_default_end();
-    }
+    }*/
 }
 
 MoleculeSignature Molecule::get_molecule_signature() {
