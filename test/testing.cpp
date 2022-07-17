@@ -156,6 +156,23 @@ bool test_destructor() {
     return TestComponent::cnt == 0;
 }
 
+void test(bunshi::Entity entity) {
+    std::cout << "hm\n";
+}
+
+bool test_signals_on_destroy() {
+
+    bunshi::Universe universe;
+    bunshi::Entity entity = universe.create();
+    universe.insert_component<float>(entity, 0.0f);
+    universe.insert_component<int>(entity, 1);
+    universe.connect_on_remove<float>(test);
+    universe.disconnect_on_remove<float>(test);
+    universe.remove(entity);
+
+    return true;
+}
+
 int main() {
 
     run_test(test_single_non_existing_removal, "Removing a nonexisting entity");
@@ -168,6 +185,7 @@ int main() {
     run_test(test_null, "Null");
     run_test(test_copy, "Copy with underlying data");
     run_test(test_destructor, "Running destructor when removing entity");
+    run_test(test_signals_on_destroy, "Signals on destroy");
 
     //print all the results
     std::cout << "Tests: " << total << "; Passes: " << successes << "; Fails: " << fails << "\n";

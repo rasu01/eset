@@ -1,10 +1,11 @@
 #pragma once
-#include "component_storage.h"
-#include "types.h"
 #include <unordered_map>
 #include <vector>
 #include <array>
 #include <cstring>
+#include "component_storage.h"
+#include "types.h"
+#include "signal.h"
 
 namespace bunshi {
 
@@ -113,7 +114,7 @@ namespace bunshi {
                 This shouldn't really be used by the user, since removing a nonexistant 
                 entity will give undefined behaviour.
             */
-            void remove_entity(Entity entity);
+            void remove_entity(Entity entity, Signal<Entity>* on_destroy_signals);
 
             /*
                 Initializes an entity inside the molecule.

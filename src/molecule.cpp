@@ -35,7 +35,7 @@ Molecule::~Molecule() {
     }
 }
 
-void Molecule::remove_entity(Entity entity) {
+void Molecule::remove_entity(Entity entity, Signal<Entity>* on_destroy_signals) {
 
     //since we check if the entity exist in the universe, it should exist here too.
     //therefore, we don't need to check again inside this molecule
@@ -46,6 +46,9 @@ void Molecule::remove_entity(Entity entity) {
         //remove all the components and swap end components
         for(size_t id : compound_indices) {
             compound[id]->remove_end();
+            if(on_destroy_signals) {
+                on_destroy_signals[id].emit(entity);
+            }
         }
         entity_to_offset.erase(entity);
         offset_to_entity.pop_back();

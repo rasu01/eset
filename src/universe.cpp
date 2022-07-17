@@ -12,7 +12,7 @@ bool Universe::remove(Entity entity) {
     auto molecule_index_it = entities.find(entity);
     if(molecule_index_it != entities.end()) {
         size_t molecule_index = molecule_index_it->second;
-        molecules[molecule_index].remove_entity(entity);
+        molecules[molecule_index].remove_entity(entity, on_remove_signals);
         entities.erase(entity);
         return true;
     } else {

@@ -3,3 +3,4 @@
 #include "molecule.h"
 #include "universe.h"
 #include "types.h"
+#include "signal.h"

@@ -4,9 +4,10 @@
 #include <unordered_map>
 #include <array>
 #include <chrono>
+#include <utility>
 #include "molecule.h"
 #include "types.h"
-#include <utility>
+#include "signal.h"
 
 
 namespace bunshi {
@@ -180,7 +181,7 @@ namespace bunshi {
                             }
 
                             //remove from old molecule
-                            molecules[molecule_index].remove_entity(entity);
+                            molecules[molecule_index].remove_entity(entity, nullptr);
 
                             //insert the new component
                             size_t id = Types::type_id<T>();
@@ -204,7 +205,7 @@ namespace bunshi {
                             }
 
                             //remove from old molecule
-                            current_molecule.remove_entity(entity);
+                            current_molecule.remove_entity(entity, nullptr);
 
                             //insert the new component
                             size_t id = Types::type_id<T>();
@@ -323,6 +324,53 @@ namespace bunshi {
                 the largest value. (infinity..?)
             */
             size_t find_molecule(MoleculeSignature& signature);
+
+            /*
+                Connects a function to a signal
+                that fires when a specific 
+                components gets destroyed! 
+            */
+            template<typename T>
+            void connect_on_remove(std::function<void(Entity)> function) {
+                on_remove_signals[Types::type_id<T>()].connect(function);
+            }
+
+            /*
+                Disconnects a function to 
+                a signal that fires when 
+                a specific function gets
+                removed.
+            */
+            template<typename T>
+            void disconnect_on_remove(std::function<void(Entity)> function) {
+                on_remove_signals[Types::type_id<T>()].disconnect(function);
+            }
+
+            /*
+                Connects a function that
+                requires an instance to a signal
+                that fires when a specific 
+                components gets destroyed!
+            */
+            template<typename T, typename Function, typename InstanceType>
+            void connect_on_remove(Function function, InstanceType instance) {
+                on_remove_signals[Types::type_id<T>()].connect(function, instance);
+            }
+            
+            /*
+                Disconnects a function that
+                requires an instance to a signal
+                that fires when a specific 
+                components gets destroyed!
+                This should be done at most
+                when the lifetime of the instance
+                runs out. Otherwise the signal might
+                throw a segmentation fault when emiting.
+            */
+            template<typename T, typename Function, typename InstanceType>
+            void disconnect_on_remove(Function function, InstanceType instance) {
+                on_remove_signals[Types::type_id<T>()].disconnect(function, instance);
+            }
             
         private:
 
@@ -332,6 +380,9 @@ namespace bunshi {
 
             //all the molecules
             std::vector<Molecule> molecules;
+
+            //signals
+            Signal<Entity> on_remove_signals[MAX_COMPONENTS];
 
             //all the entities that exist inside this universe instance.
             //the value is which molecule index it uses in the vector above
