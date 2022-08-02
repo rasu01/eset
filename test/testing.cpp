@@ -96,7 +96,7 @@ bool test_iteration() {
 
     for(int i = 0; i < 1000; i++) {
         bunshi::Entity entity = universe.create();
-        Position pos = {0.0, 0.0};
+        Position pos = {42.0, 0.0};
         Unit unit = {"yo"};
         universe.insert_component<Position>(entity, pos);
         universe.insert_component<Unit>(entity, unit);
@@ -104,7 +104,7 @@ bool test_iteration() {
 
     size_t count = 0;
     for(auto [entity_id, pos, unit] : universe.iterator<Position, Unit>()) {
-        if(pos.x == 0.0) {
+        if(pos.x == 42.0) {
             count++;
         }
     }

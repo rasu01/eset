@@ -75,12 +75,16 @@ namespace bunshi {
             }
 
             inline std::tuple<Entity, T&...> operator*() {
-                component_index = 0;
-                return {current_molecule->get_entity(entity_index), (component_index++, *(T*)storages[component_index-1]->get_component_pointer(entity_index))...};
+                return get_tuple(std::make_index_sequence<sizeof...(T)>{});
             }
 
         private:
             friend Universe;
+
+            template<size_t... index>
+            inline std::tuple<Entity, T&...> get_tuple(std::integer_sequence<size_t, index...>) {
+                return {current_molecule->get_entity(entity_index), (*(T*)storages[index]->get_component_pointer(entity_index))...};
+            }
 
             static size_t counter;
             size_t molecule_index;

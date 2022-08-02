@@ -98,7 +98,7 @@ namespace bunshi {
             }
             
             void push_back(void* pointer) {
-                components.push_back(*(ComponentType*)pointer);
+                components.push_back(std::move(*(ComponentType*)pointer));
             }
 
             void set_component(size_t offset, void* data_pointer) {

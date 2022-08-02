@@ -61,6 +61,12 @@ namespace bunshi {
                 return true;
             }
 
+            inline bool contains(size_t id) {
+                size_t segment = id / 8;
+                size_t rest = id - (segment*8);
+                return ((m_ids[segment] | (1 << rest)) == m_ids[segment]);
+            }
+
         private:
             size_t m_count = 0;
             uint8_t m_ids[MAX_COMPONENTS / 8];
@@ -128,7 +134,7 @@ namespace bunshi {
             */
             template<typename T>
             inline bool has_component() {
-                if(compound[Types::type_id<T>()]) {
+                if(fast_signature.contains(Types::type_id<T>())) {
                     return compound[Types::type_id<T>()]->get_component_size() != 0;
                 } else {
                     return false;
