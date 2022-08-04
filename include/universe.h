@@ -9,7 +9,6 @@
 #include "types.h"
 #include "signal.h"
 
-
 namespace bunshi {
 
     class Universe;
@@ -32,9 +31,7 @@ namespace bunshi {
 
                 if(molecule_count > 0) {
                     it.current_molecule = molecules[0];
-                    it.component_index = 0;
-                    ((it.component_index++, it.storages[it.component_index-1] = it.current_molecule->compound[Types::type_id<T>()]), ...);
-
+                    it.set_storages(std::make_index_sequence<sizeof...(T)>{});
                 } else {
                     it.molecule_index = -1;
                     it.entity_index = -1;
@@ -67,9 +64,8 @@ namespace bunshi {
                         molecule_index = -1;
                         entity_index = -1;
                     } else {
-                        current_molecule++;// = molecules[molecule_index];
-                        component_index = 0;
-                        ((component_index++, storages[component_index-1] = current_molecule->compound[Types::type_id<T>()]), ...);
+                        current_molecule++;
+                        set_storages(std::make_index_sequence<sizeof...(T)>{});
                     }
                 }
             }
@@ -86,10 +82,14 @@ namespace bunshi {
                 return {current_molecule->get_entity(entity_index), (*(T*)storages[index]->get_component_pointer(entity_index))...};
             }
 
+            template<size_t... index>
+            inline void set_storages(std::integer_sequence<size_t, index...>) {
+                ((storages[index] = current_molecule->compound[Types::type_id<T>()]), ...);
+            }
+
             static size_t counter;
             size_t molecule_index;
             size_t entity_index;
-            size_t component_index = 0;
             size_t molecule_count = 0;
             Molecule* current_molecule = nullptr;
             BaseStorage* storages[sizeof...(T)];
@@ -286,10 +286,6 @@ namespace bunshi {
             template<typename... T>
             EntityIterator<T...> iterator() {
 
-                //get the type ids
-                //MoleculeSignature signature;
-                //((signature.add(Types::type_id<T>(), sizeof(T))), ...);
-
                 FastSignature sign;
                 ((sign.add(Types::type_id<T>())), ...);
 
@@ -308,15 +304,6 @@ namespace bunshi {
                         }
                     }
                 }
-
-                /*for(size_t i = 0; i < molecules.size(); i++) {
-                    if(molecules[i].count() > 0) {
-                        if(molecules[i].get_molecule_signature().contains(signature)) {
-                            iter.molecules[iter.molecule_count] = &molecules[i];
-                            iter.molecule_count++;
-                        }
-                    }
-                }*/
 
                 return iter;
             }
