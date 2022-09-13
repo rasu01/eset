@@ -5,11 +5,11 @@ endif()
 
 # this project
 cmake_minimum_required(VERSION 3.16.3)
-project(bunshi CXX)
+project(eset CXX)
 set(CMAKE_CXX_STANDARD 20)
 
 # include files
-include_directories(bunshi 
+include_directories(eset 
     ${PROJECT_SOURCE_DIR}/include/
 )
 
@@ -18,4 +18,4 @@ file(GLOB_RECURSE src-files "src/*.cpp")
 file(GLOB_RECURSE include-files "include/*.h")
 
 # add executable
-add_library(bunshi STATIC ${src-files} ${include-files})
+add_library(eset STATIC ${src-files} ${include-files})

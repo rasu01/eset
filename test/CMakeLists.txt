@@ -8,9 +8,9 @@ include_directories(test
     ${CMAKE_SOURCE_DIR}/../include/
 )
 
-# add bunshi
-add_subdirectory(${CMAKE_SOURCE_DIR}/../ ${CMAKE_SOURCE_DIR}/bunshi/)
+# add eset
+add_subdirectory(${CMAKE_SOURCE_DIR}/../ ${CMAKE_SOURCE_DIR}/eset/)
 
 # add executable
 add_executable(test testing.cpp)
-target_link_libraries(test bunshi)
+target_link_libraries(test eset)
