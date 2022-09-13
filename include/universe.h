@@ -5,7 +5,7 @@
 #include <array>
 #include <chrono>
 #include <utility>
-#include "molecule.h"
+#include "archetype.h"
 #include "types.h"
 #include "signal.h"
 
@@ -20,20 +20,20 @@ namespace bunshi {
             inline EntityIterator begin() {
 
                 EntityIterator it;
-                it.molecule_index = 0;
+                it.archetype_index = 0;
                 it.entity_index = 0;
-                it.molecule_count = molecule_count;
+                it.archetype_count = archetype_count;
 
-                //copy molecule pointers
-                for(size_t i = 0; i < molecule_count; i++) {
-                    it.molecules[i] = molecules[i];
+                //copy archetype pointers
+                for(size_t i = 0; i < archetype_count; i++) {
+                    it.archetypes[i] = archetypes[i];
                 }
 
-                if(molecule_count > 0) {
-                    it.current_molecule = molecules[0];
+                if(archetype_count > 0) {
+                    it.current_archetype = archetypes[0];
                     it.set_storages(std::make_index_sequence<sizeof...(T)>{});
                 } else {
-                    it.molecule_index = -1;
+                    it.archetype_index = -1;
                     it.entity_index = -1;
                 }
 
@@ -42,29 +42,29 @@ namespace bunshi {
 
             inline EntityIterator end() {
                 EntityIterator it;
-                it.molecule_index = -1;
+                it.archetype_index = -1;
                 it.entity_index = -1;
                 return it;
             }
 
             inline bool operator!=(EntityIterator& rhs) {
-                return molecule_index != rhs.molecule_index;
+                return archetype_index != rhs.archetype_index;
             }
 
             inline void operator++() {
 
-                size_t max_entities = current_molecule->count();
+                size_t max_entities = current_archetype->count();
                 entity_index++;
 
                 if(entity_index == max_entities) {
                     entity_index = 0;
-                    molecule_index++;
+                    archetype_index++;
 
-                    if(molecule_index == molecule_count) {
-                        molecule_index = -1;
+                    if(archetype_index == archetype_count) {
+                        archetype_index = -1;
                         entity_index = -1;
                     } else {
-                        current_molecule++;
+                        current_archetype++;
                         set_storages(std::make_index_sequence<sizeof...(T)>{});
                     }
                 }
@@ -79,25 +79,25 @@ namespace bunshi {
 
             template<size_t... index>
             inline std::tuple<Entity, T&...> get_tuple(std::integer_sequence<size_t, index...>) {
-                return {current_molecule->get_entity(entity_index), (*(T*)storages[index]->get_component_pointer(entity_index))...};
+                return {current_archetype->get_entity(entity_index), (*(T*)storages[index]->get_component_pointer(entity_index))...};
             }
 
             template<size_t... index>
             inline void set_storages(std::integer_sequence<size_t, index...>) {
-                ((storages[index] = current_molecule->compound[Types::type_id<T>()]), ...);
+                ((storages[index] = current_archetype->compound[Types::type_id<T>()]), ...);
             }
 
             static size_t counter;
-            size_t molecule_index;
+            size_t archetype_index;
             size_t entity_index;
-            size_t molecule_count = 0;
-            Molecule* current_molecule = nullptr;
+            size_t archetype_count = 0;
+            Archetype* current_archetype = nullptr;
             BaseStorage* storages[sizeof...(T)];
-            Molecule* molecules[128];
+            Archetype* archetypes[128];
     };
 
 
-    //An ECS collection with all the entites stored inside compounds, that are stored in specific molecules(archetypes).
+    //An ECS collection with all the entites stored inside compounds, that are stored in specific archetypes(archetypes).
     class Universe {
         public:
 
@@ -133,90 +133,90 @@ namespace bunshi {
             bool insert_component(Entity entity, T component) {
 
                 //check if the entity exists
-                auto molecule_index_it = entities.find(entity);
-                if(molecule_index_it != entities.end()) {
+                auto archetype_index_it = entities.find(entity);
+                if(archetype_index_it != entities.end()) {
 
                     //it exists
-                    size_t molecule_index = molecule_index_it->second;
-                    Molecule& current_molecule = molecules[molecule_index];
+                    size_t archetype_index = archetype_index_it->second;
+                    Archetype& current_archetype = archetypes[archetype_index];
 
-                    //check if the current molecule already has this component
-                    if(current_molecule.has_component<T>()) {
+                    //check if the current archetype already has this component
+                    if(current_archetype.has_component<T>()) {
                         
                         //then we replace it with the new one that was given
-                        size_t offset = current_molecule.entity_to_offset[entity];
-                        BaseStorage* storage = current_molecule.compound[Types::type_id<T>()];
+                        size_t offset = current_archetype.entity_to_offset[entity];
+                        BaseStorage* storage = current_archetype.compound[Types::type_id<T>()];
                         storage->set_component(offset, &component);
 
                     } else {
 
-                        //it doesn't exist, we need to check if there is a molecule that fits the spec of the new entity
-                        MoleculeSignature signature = current_molecule.get_molecule_signature();
+                        //it doesn't exist, we need to check if there is a archetype that fits the spec of the new entity
+                        ArchetypeSignature signature = current_archetype.get_archetype_signature();
                         signature.add(Types::type_id<T>(), sizeof(T));
-                        size_t molecule_try = find_molecule(signature);
+                        size_t archetype_try = find_archetype(signature);
 
-                        //couldn't find a molecule, we need to create one and swap with the new one
-                        if(molecule_try == -1) {
+                        //couldn't find a archetype, we need to create one and swap with the new one
+                        if(archetype_try == -1) {
 
-                            size_t new_molecule_index = molecules.size();
+                            size_t new_archetype_index = archetypes.size();
 
                             //get the signatures
                             std::vector<BaseStorage*> storage_pointers;
-                            for(size_t i = 0; i < current_molecule.compound_indices.size(); i++) {
+                            for(size_t i = 0; i < current_archetype.compound_indices.size(); i++) {
                                 //std::cout << i << "\n";
-                                BaseStorage* copy = current_molecule.compound[current_molecule.compound_indices[i]]->make_empty_copy();
+                                BaseStorage* copy = current_archetype.compound[current_archetype.compound_indices[i]]->make_empty_copy();
                                 storage_pointers.push_back(copy);
                             }
                             BaseStorage* new_storage = new ComponentStorage<T>();
                             storage_pointers.push_back(new_storage);
-                            molecules.emplace_back(storage_pointers);
+                            archetypes.emplace_back(storage_pointers);
 
                             //swap
-                            Molecule& new_molecule = molecules[new_molecule_index];
-                            new_molecule.insert_entity(entity);
+                            Archetype& new_archetype = archetypes[new_archetype_index];
+                            new_archetype.insert_entity(entity);
 
-                            size_t old_offset = molecules[molecule_index].entity_to_offset[entity];
-                            size_t new_offset = new_molecule.entity_to_offset[entity];
+                            size_t old_offset = archetypes[archetype_index].entity_to_offset[entity];
+                            size_t new_offset = new_archetype.entity_to_offset[entity];
 
-                            for(size_t id : molecules[molecule_index].compound_indices) {
-                                BaseStorage* storage = molecules[molecule_index].compound[id];
+                            for(size_t id : archetypes[archetype_index].compound_indices) {
+                                BaseStorage* storage = archetypes[archetype_index].compound[id];
                                 void* data = storage->get_component_pointer(old_offset);
-                                new_molecule.compound[id]->push_back(data); 
+                                new_archetype.compound[id]->push_back(data); 
                             }
 
-                            //remove from old molecule
-                            molecules[molecule_index].remove_entity(entity, nullptr);
+                            //remove from old archetype
+                            archetypes[archetype_index].remove_entity(entity, nullptr);
 
                             //insert the new component
                             size_t id = Types::type_id<T>();
-                            new_molecule.compound[id]->push_back(&component);
+                            new_archetype.compound[id]->push_back(&component);
                             
-                            //change molecule index since we moved it
-                            molecule_index_it->second = new_molecule_index;
+                            //change archetype index since we moved it
+                            archetype_index_it->second = new_archetype_index;
 
                         } else {
 
                             //found one!! swap with this!
-                            Molecule& new_molecule = molecules[molecule_try];
-                            new_molecule.insert_entity(entity);
+                            Archetype& new_archetype = archetypes[archetype_try];
+                            new_archetype.insert_entity(entity);
 
-                            size_t old_offset = molecules[molecule_index].entity_to_offset[entity];
-                            size_t new_offset = new_molecule.entity_to_offset[entity];
-                            for(size_t id : molecules[molecule_index].compound_indices) {
-                                BaseStorage* storage = molecules[molecule_index].compound[id];
+                            size_t old_offset = archetypes[archetype_index].entity_to_offset[entity];
+                            size_t new_offset = new_archetype.entity_to_offset[entity];
+                            for(size_t id : archetypes[archetype_index].compound_indices) {
+                                BaseStorage* storage = archetypes[archetype_index].compound[id];
                                 void* data = storage->get_component_pointer(old_offset);
-                                new_molecule.compound[id]->push_back(data);
+                                new_archetype.compound[id]->push_back(data);
                             }
 
-                            //remove from old molecule
-                            current_molecule.remove_entity(entity, nullptr);
+                            //remove from old archetype
+                            current_archetype.remove_entity(entity, nullptr);
 
                             //insert the new component
                             size_t id = Types::type_id<T>();
-                            new_molecule.compound[id]->push_back(&component);
+                            new_archetype.compound[id]->push_back(&component);
                             
-                            //change molecule index since we moved it
-                            molecule_index_it->second = molecule_try;
+                            //change archetype index since we moved it
+                            archetype_index_it->second = archetype_try;
                         }
                     }
                     return true;
@@ -241,12 +241,12 @@ namespace bunshi {
             T* get_component(Entity entity) {
 
                 //check if it exists
-                auto molecule_index_it = entities.find(entity);
-                if(molecule_index_it != entities.end()) {
+                auto archetype_index_it = entities.find(entity);
+                if(archetype_index_it != entities.end()) {
 
-                    //if it does, return the component from the molecule
-                    size_t molecule_index = molecule_index_it->second;
-                    return molecules[molecule_index].get_component<T>(entity);
+                    //if it does, return the component from the archetype
+                    size_t archetype_index = archetype_index_it->second;
+                    return archetypes[archetype_index].get_component<T>(entity);
                 } else {
 
                     //else return nullptr, since the entity doesn't exist
@@ -264,13 +264,13 @@ namespace bunshi {
             template<typename... Ts>
             std::tuple<Ts*...> get_components(Entity entity) {
                 //check if it exists
-                auto molecule_index_it = entities.find(entity);
-                if(molecule_index_it != entities.end()) {
+                auto archetype_index_it = entities.find(entity);
+                if(archetype_index_it != entities.end()) {
 
-                    //if it does, return the component from the molecule
-                    size_t molecule_index = molecule_index_it->second;
-                    Molecule* molecule = &molecules[molecule_index];
-                    return {(molecule->get_component<Ts>(entity))...};
+                    //if it does, return the component from the archetype
+                    size_t archetype_index = archetype_index_it->second;
+                    Archetype* archetype = &archetypes[archetype_index];
+                    return {(archetype->get_component<Ts>(entity))...};
                 } else {
 
                     //else return nullptr, since the entity doesn't exist
@@ -291,16 +291,16 @@ namespace bunshi {
 
                 //construct iterator
                 EntityIterator<T...> iter;
-                iter.molecule_index = 0;
+                iter.archetype_index = 0;
                 iter.entity_index = 0;
-                iter.molecule_count = 0;
+                iter.archetype_count = 0;
 
-                //find molecules
-                for(size_t i = 0; i < molecules.size(); i++) {
-                    if(molecules[i].count() > 0) {
-                        if(molecules[i].get_fast_signature().contains(sign)) {
-                            iter.molecules[iter.molecule_count] = &molecules[i];
-                            iter.molecule_count++;
+                //find archetypes
+                for(size_t i = 0; i < archetypes.size(); i++) {
+                    if(archetypes[i].count() > 0) {
+                        if(archetypes[i].get_fast_signature().contains(sign)) {
+                            iter.archetypes[iter.archetype_count] = &archetypes[i];
+                            iter.archetype_count++;
                         }
                     }
                 }
@@ -309,12 +309,12 @@ namespace bunshi {
             }
 
             /*
-                Tries to find a molecule with a given signature.
+                Tries to find a archetype with a given signature.
                 Returns the index if it exists, otherwise it returns
                 -1. Since this is a size_t, it means that it will return
                 the largest value. (infinity..?)
             */
-            size_t find_molecule(MoleculeSignature& signature);
+            size_t find_archetype(ArchetypeSignature& signature);
 
             /*
                 Connects a function to a signal
@@ -369,14 +369,14 @@ namespace bunshi {
             //starts at 1, since 0 is the "null" entity.
             size_t entity_counter = 1;
 
-            //all the molecules
-            std::vector<Molecule> molecules;
+            //all the archetypes
+            std::vector<Archetype> archetypes;
 
             //signals
             Signal<Entity> on_remove_signals[MAX_COMPONENTS];
 
             //all the entities that exist inside this universe instance.
-            //the value is which molecule index it uses in the vector above
+            //the value is which archetype index it uses in the vector above
             std::unordered_map<Entity, size_t> entities;
     };
 }

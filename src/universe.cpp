@@ -5,14 +5,14 @@ using namespace bunshi;
 Universe::Universe() {
 
     //create an empty archetype, so we can assign newly created entities to it
-    molecules.emplace_back();
+    archetypes.emplace_back();
 } 
 
 bool Universe::remove(Entity entity) {
-    auto molecule_index_it = entities.find(entity);
-    if(molecule_index_it != entities.end()) {
-        size_t molecule_index = molecule_index_it->second;
-        molecules[molecule_index].remove_entity(entity, on_remove_signals);
+    auto archetype_index_it = entities.find(entity);
+    if(archetype_index_it != entities.end()) {
+        size_t archetype_index = archetype_index_it->second;
+        archetypes[archetype_index].remove_entity(entity, on_remove_signals);
         entities.erase(entity);
         return true;
     } else {
@@ -28,14 +28,14 @@ Entity Universe::create() {
     size_t new_id = entity_counter;
     entity_counter++;
     entities.emplace(new_id, 0); //assign the default archetype
-    molecules[0].insert_entity(new_id);
+    archetypes[0].insert_entity(new_id);
     return new_id;
 }
 
-size_t Universe::find_molecule(MoleculeSignature& signature) {
+size_t Universe::find_archetype(ArchetypeSignature& signature) {
 
-    for(size_t i = 0; i < molecules.size(); i++) {
-        if(molecules[i].get_molecule_signature() == signature) {
+    for(size_t i = 0; i < archetypes.size(); i++) {
+        if(archetypes[i].get_archetype_signature() == signature) {
             return i;
         }
     }

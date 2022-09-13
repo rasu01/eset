@@ -16,7 +16,7 @@ namespace bunshi {
             /*
                 Moves the last component to another offset.
                 Very useful when removing an entity's components from one
-                molecule(archetype). 
+                archetype.
             */
             virtual void move_from_end(size_t destination_offset) = 0;
 
