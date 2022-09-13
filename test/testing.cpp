@@ -36,16 +36,16 @@ void run_test(std::function<bool()> test_function, std::string&& test_name) {
 }
 
 bool test_single_non_existing_removal() {
-    eset::Universe universe;
+    eset::Set set;
     eset::Entity entity = 1;
 
     //remove should be false
-    return !universe.remove(entity);
+    return !set.remove(entity);
 }
 
 bool test_create_entity() {
-    eset::Universe universe;
-    eset::Entity entity = universe.create();
+    eset::Set set;
+    eset::Entity entity = set.create();
     return entity == 1;
 }
 
@@ -57,33 +57,33 @@ bool test_entity_and_size_t_id() {
 }
 
 bool test_created_exist() {
-    eset::Universe universe;
-    eset::Entity entity = universe.create();
-    return universe.exist(entity);
+    eset::Set set;
+    eset::Entity entity = set.create();
+    return set.exist(entity);
 }
 
 bool test_created_remove() {
-    eset::Universe universe;
-    eset::Entity entity = universe.create();
-    return universe.remove(entity);
+    eset::Set set;
+    eset::Entity entity = set.create();
+    return set.remove(entity);
 }
 
 bool test_component_get() {
-    eset::Universe universe;
-    eset::Entity entity = universe.create();
+    eset::Set set;
+    eset::Entity entity = set.create();
 
-    universe.insert_component<float>(entity, 1024.0);
-    universe.insert_component<size_t>(entity, 512);
+    set.insert_component<float>(entity, 1024.0);
+    set.insert_component<size_t>(entity, 512);
     
-    float decimal = *universe.get_component<float>(entity);    
-    size_t number = *universe.get_component<size_t>(entity);
+    float decimal = *set.get_component<float>(entity);    
+    size_t number = *set.get_component<size_t>(entity);
 
     return number == 512 && decimal == 1024.0;
 }
 
 bool test_iteration() {
 
-    eset::Universe universe;
+    eset::Set set;
 
     struct Position {
         float x;
@@ -95,15 +95,15 @@ bool test_iteration() {
     };
 
     for(int i = 0; i < 1000; i++) {
-        eset::Entity entity = universe.create();
+        eset::Entity entity = set.create();
         Position pos = {42.0, 0.0};
         Unit unit = {"yo"};
-        universe.insert_component<Position>(entity, pos);
-        universe.insert_component<Unit>(entity, unit);
+        set.insert_component<Position>(entity, pos);
+        set.insert_component<Unit>(entity, unit);
     }
 
     size_t count = 0;
-    for(auto [entity_id, pos, unit] : universe.iterator<Position, Unit>()) {
+    for(auto [entity_id, pos, unit] : set.iterator<Position, Unit>()) {
         if(pos.x == 42.0) {
             count++;
         }
@@ -122,16 +122,16 @@ bool test_copy() {
         std::string string;
     };
 
-    eset::Universe universe;
-    eset::Entity entity = universe.create();
+    eset::Set set;
+    eset::Entity entity = set.create();
     {
         TestComponent tc;
         tc.string = "Testing to construct a new string here!!";
-        universe.insert_component<float>(entity, 10.0);
-        universe.insert_component<TestComponent>(entity, tc);
+        set.insert_component<float>(entity, 10.0);
+        set.insert_component<TestComponent>(entity, tc);
     }
 
-    return universe.get_component<TestComponent>(entity)->string == "Testing to construct a new string here!!";
+    return set.get_component<TestComponent>(entity)->string == "Testing to construct a new string here!!";
 }
 
 struct TestComponent {
@@ -146,11 +146,11 @@ int TestComponent::cnt = 0;
 bool test_destructor() {
 
     {
-        eset::Universe universe;
-        eset::Entity entity = universe.create();
-        universe.insert_component<TestComponent>(entity, TestComponent());
-        universe.insert_component<float>(entity, 0.0f);
-        //<--- should delete all the components when the universe goes out of scope!
+        eset::Set set;
+        eset::Entity entity = set.create();
+        set.insert_component<TestComponent>(entity, TestComponent());
+        set.insert_component<float>(entity, 0.0f);
+        //<--- should delete all the components when the set goes out of scope!
     }
 
     return TestComponent::cnt == 0;
@@ -162,13 +162,13 @@ void test(eset::Entity entity) {
 
 bool test_signals_on_destroy() {
 
-    eset::Universe universe;
-    eset::Entity entity = universe.create();
-    universe.insert_component<float>(entity, 0.0f);
-    universe.insert_component<int>(entity, 1);
-    universe.connect_on_remove<float>(test);
-    universe.disconnect_on_remove<float>(test);
-    universe.remove(entity);
+    eset::Set set;
+    eset::Entity entity = set.create();
+    set.insert_component<float>(entity, 0.0f);
+    set.insert_component<int>(entity, 1);
+    set.connect_on_remove<float>(test);
+    set.disconnect_on_remove<float>(test);
+    set.remove(entity);
 
     return true;
 }

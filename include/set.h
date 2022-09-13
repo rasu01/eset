@@ -11,7 +11,7 @@
 
 namespace eset {
 
-    class Universe;
+    class Set;
 
     template<typename... T>
     class EntityIterator {
@@ -75,7 +75,7 @@ namespace eset {
             }
 
         private:
-            friend Universe;
+            friend Set;
 
             template<size_t... index>
             inline std::tuple<Entity, T&...> get_tuple(std::integer_sequence<size_t, index...>) {
@@ -98,10 +98,10 @@ namespace eset {
 
 
     //An ECS collection with all the entites stored inside compounds, that are stored in specific archetypes(archetypes).
-    class Universe {
+    class Set {
         public:
 
-            Universe();
+            Set();
 
             /*
                 Returns true if the entity provided exists,
@@ -375,7 +375,7 @@ namespace eset {
             //signals
             Signal<Entity> on_remove_signals[MAX_COMPONENTS];
 
-            //all the entities that exist inside this universe instance.
+            //all the entities that exist inside this Set instance.
             //the value is which archetype index it uses in the vector above
             std::unordered_map<Entity, size_t> entities;
     };

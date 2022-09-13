@@ -1,14 +1,14 @@
-#include "universe.h"
+#include "set.h"
 
 using namespace eset;
 
-Universe::Universe() {
+Set::Set() {
 
     //create an empty archetype, so we can assign newly created entities to it
     archetypes.emplace_back();
 } 
 
-bool Universe::remove(Entity entity) {
+bool Set::remove(Entity entity) {
     auto archetype_index_it = entities.find(entity);
     if(archetype_index_it != entities.end()) {
         size_t archetype_index = archetype_index_it->second;
@@ -20,11 +20,11 @@ bool Universe::remove(Entity entity) {
     }
 }
 
-bool Universe::exist(Entity entity) {
+bool Set::exist(Entity entity) {
     return entities.find(entity) != entities.end();
 }
 
-Entity Universe::create() {
+Entity Set::create() {
     size_t new_id = entity_counter;
     entity_counter++;
     entities.emplace(new_id, 0); //assign the default archetype
@@ -32,7 +32,7 @@ Entity Universe::create() {
     return new_id;
 }
 
-size_t Universe::find_archetype(ArchetypeSignature& signature) {
+size_t Set::find_archetype(ArchetypeSignature& signature) {
 
     for(size_t i = 0; i < archetypes.size(); i++) {
         if(archetypes[i].get_archetype_signature() == signature) {

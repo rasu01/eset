@@ -37,7 +37,7 @@ Archetype::~Archetype() {
 
 void Archetype::remove_entity(Entity entity, Signal<Entity>* on_destroy_signals) {
 
-    //since we check if the entity exist in the universe, it should exist here too.
+    //since we check if the entity exist in the set, it should exist here too.
     //therefore, we don't need to check again inside this Archetype
     size_t offset = entity_to_offset[entity];
 

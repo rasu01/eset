@@ -10,7 +10,7 @@
 namespace eset {
 
     class Archetype;
-    class Universe;
+    class Set;
 
     class ArchetypeSignature {
 
@@ -162,7 +162,7 @@ namespace eset {
 
         private:
 
-            friend Universe;
+            friend Set;
             template<typename...> friend class EntityIterator;
 
             //these are all the entities that have this archetype
