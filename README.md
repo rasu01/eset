@@ -1,24 +1,6 @@
 # bunshi
 This is an Entity Component System written in C++, where the goal is to make it fast and simple!
 
-The word Bunshi, or 分子 as it is written in Japanese, means "molecule" in English. 
-The actual ECS is using Archetypes, to store different types of entities that shares the same signature.
-Therefore, an Archetype here, is the same thing as a "molecule" type(another word for this is "chemical compound", but it is a rather long word, which is why I didn't name this library after it). 
-A universe is just a collection filled with all these entities that may have different molecule types. 
+The actual ECS is using Archetypes, to store different types of entities that shares the same unique signature.
+A universe is just a collection filled with all these entities that may have different archetypes. 
 This universe is the main class in this system that allows you to for example create new entities and either add, delete or get components from them.
-
-# Examples 
-These can also be seen as "todo", since everything isn't implemented yet.
-
-This first example demonstrates how to iterate over entites that have specific components attached to them. In this example, it iterates over every entity that has a Player component, and a Position component, and then prints the entity's id.
-```
-#include <iostream>
-#include <bunshi.h>
-
-void iterate_players(bunshi::Universe& universe) {
-  
-   for(auto& [entity, player, position] : universe.iterator<Player, Position>()) {
-      std::cout << entity << "\n";
-   }
-}
-```
