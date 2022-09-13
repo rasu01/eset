@@ -1,3 +1,3 @@
 #include "types.h"
 
-size_t bunshi::Types::component_counter = 0;
+size_t eset::Types::component_counter = 0;

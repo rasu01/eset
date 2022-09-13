@@ -2,7 +2,7 @@
 #include <vector>
 #include <functional>  
 
-namespace bunshi {
+namespace eset {
     
     template<typename... T>
     class Signal {

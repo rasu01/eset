@@ -2,7 +2,7 @@
 #include <cassert>
 #include <iostream>
 
-using namespace bunshi;
+using namespace eset;
 
 Archetype::Archetype(Archetype&& other) {
     entity_to_offset = std::move(other.entity_to_offset);

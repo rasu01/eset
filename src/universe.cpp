@@ -1,6 +1,6 @@
 #include "universe.h"
 
-using namespace bunshi;
+using namespace eset;
 
 Universe::Universe() {
 

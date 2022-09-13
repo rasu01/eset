@@ -7,7 +7,7 @@
 #include "types.h"
 #include "signal.h"
 
-namespace bunshi {
+namespace eset {
 
     class Archetype;
     class Universe;

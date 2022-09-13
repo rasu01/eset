@@ -4,7 +4,7 @@
 #include <chrono>
 #include <functional>
 #include <stdlib.h>
-#include <bunshi.h>
+#include <eset.h>
 
 /* FOREGROUND */
 #define RESET  "\x1B[0m"
@@ -36,41 +36,41 @@ void run_test(std::function<bool()> test_function, std::string&& test_name) {
 }
 
 bool test_single_non_existing_removal() {
-    bunshi::Universe universe;
-    bunshi::Entity entity = 1;
+    eset::Universe universe;
+    eset::Entity entity = 1;
 
     //remove should be false
     return !universe.remove(entity);
 }
 
 bool test_create_entity() {
-    bunshi::Universe universe;
-    bunshi::Entity entity = universe.create();
+    eset::Universe universe;
+    eset::Entity entity = universe.create();
     return entity == 1;
 }
 
 bool test_entity_and_size_t_id() {
 
-    //since a bunshi::Entity is a size_t underneath,
+    //since a eset::Entity is a size_t underneath,
     //this expression should return true
-    return typeid(bunshi::Entity) == typeid(size_t);
+    return typeid(eset::Entity) == typeid(size_t);
 }
 
 bool test_created_exist() {
-    bunshi::Universe universe;
-    bunshi::Entity entity = universe.create();
+    eset::Universe universe;
+    eset::Entity entity = universe.create();
     return universe.exist(entity);
 }
 
 bool test_created_remove() {
-    bunshi::Universe universe;
-    bunshi::Entity entity = universe.create();
+    eset::Universe universe;
+    eset::Entity entity = universe.create();
     return universe.remove(entity);
 }
 
 bool test_component_get() {
-    bunshi::Universe universe;
-    bunshi::Entity entity = universe.create();
+    eset::Universe universe;
+    eset::Entity entity = universe.create();
 
     universe.insert_component<float>(entity, 1024.0);
     universe.insert_component<size_t>(entity, 512);
@@ -83,7 +83,7 @@ bool test_component_get() {
 
 bool test_iteration() {
 
-    bunshi::Universe universe;
+    eset::Universe universe;
 
     struct Position {
         float x;
@@ -95,7 +95,7 @@ bool test_iteration() {
     };
 
     for(int i = 0; i < 1000; i++) {
-        bunshi::Entity entity = universe.create();
+        eset::Entity entity = universe.create();
         Position pos = {42.0, 0.0};
         Unit unit = {"yo"};
         universe.insert_component<Position>(entity, pos);
@@ -113,7 +113,7 @@ bool test_iteration() {
 }
 
 bool test_null() {
-    return bunshi::null == 0;
+    return eset::null == 0;
 }
 
 bool test_copy() {
@@ -122,8 +122,8 @@ bool test_copy() {
         std::string string;
     };
 
-    bunshi::Universe universe;
-    bunshi::Entity entity = universe.create();
+    eset::Universe universe;
+    eset::Entity entity = universe.create();
     {
         TestComponent tc;
         tc.string = "Testing to construct a new string here!!";
@@ -146,8 +146,8 @@ int TestComponent::cnt = 0;
 bool test_destructor() {
 
     {
-        bunshi::Universe universe;
-        bunshi::Entity entity = universe.create();
+        eset::Universe universe;
+        eset::Entity entity = universe.create();
         universe.insert_component<TestComponent>(entity, TestComponent());
         universe.insert_component<float>(entity, 0.0f);
         //<--- should delete all the components when the universe goes out of scope!
@@ -156,14 +156,14 @@ bool test_destructor() {
     return TestComponent::cnt == 0;
 }
 
-void test(bunshi::Entity entity) {
+void test(eset::Entity entity) {
     std::cout << "hm\n";
 }
 
 bool test_signals_on_destroy() {
 
-    bunshi::Universe universe;
-    bunshi::Entity entity = universe.create();
+    eset::Universe universe;
+    eset::Entity entity = universe.create();
     universe.insert_component<float>(entity, 0.0f);
     universe.insert_component<int>(entity, 1);
     universe.connect_on_remove<float>(test);
@@ -180,7 +180,7 @@ int main() {
     run_test(test_created_exist, "Create entity exist check");
     run_test(test_component_get, "Insert and get a component from an Entity");
     run_test(test_created_remove, "Create entity and remove");
-    run_test(test_entity_and_size_t_id, "size_t and bunshi::Entity type");
+    run_test(test_entity_and_size_t_id, "size_t and eset::Entity type");
     run_test(test_iteration, "Iteration");
     run_test(test_null, "Null");
     run_test(test_copy, "Copy with underlying data");

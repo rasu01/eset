@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <cstdint>
 
-namespace bunshi {
+namespace eset {
 
     //Entity definition, it's just a size_t
     #define MAX_COMPONENTS 256

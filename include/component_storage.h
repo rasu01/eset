@@ -3,7 +3,7 @@
 #include <iostream>
 #include <vector>
 
-namespace bunshi {
+namespace eset {
 
     class BaseStorage {
         public:
