@@ -64,7 +64,7 @@ namespace eset {
                         archetype_index = -1;
                         entity_index = -1;
                     } else {
-                        current_archetype++;
+                        current_archetype = archetypes[archetype_index];
                         set_storages(std::make_index_sequence<sizeof...(T)>{});
                     }
                 }
