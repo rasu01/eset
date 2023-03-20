@@ -251,6 +251,28 @@ bool test_reference_set_pointer() {
     return test_return;
 }
 
+bool test_multiple_storage_references() {
+
+    eset::Set set;
+
+    eset::Entity entity1 = set.create();
+    eset::Entity entity2 = set.create();
+    eset::Entity entity3 = set.create();
+    eset::Entity entity4 = set.create();
+
+    set.insert<float>(entity1, 10.0f);
+    set.insert<float>(entity2, 20.0f);
+    set.insert<float>(entity3, 30.0f);
+    set.insert<float>(entity4, 40.0f);
+
+    eset::Ref<float> ref1 = set.get<float>(entity1);
+    eset::Ref<float> ref2 = set.get<float>(entity2);
+    eset::Ref<float> ref3 = set.get<float>(entity3);
+    eset::Ref<float> ref4 = set.get<float>(entity4);
+
+    return *ref1.get() == 10.0f && *ref2.get() == 20.0f && *ref3.get() == 30.0f && *ref4.get() == 40.0f;
+}
+
 int main() {
 
     run_test(test_single_non_existing_removal, "Removing a nonexisting entity");
@@ -267,6 +289,7 @@ int main() {
     run_test(test_references_validity, "Reference validity");
     run_test(test_reference_count, "Reference count");
     run_test(test_reference_set_pointer, "Reference set pointer");
+    run_test(test_multiple_storage_references, "Multiple reference same storage");
 
     //print all the results
     std::cout << "Tests: " << total << "; Passes: " << successes << "; Fails: " << fails << "\n";

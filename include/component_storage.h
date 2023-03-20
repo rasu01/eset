@@ -1,6 +1,5 @@
 #pragma once
 #include "types.h"
-#include <iostream>
 #include <vector>
 
 namespace eset {
@@ -11,7 +10,7 @@ namespace eset {
             /*
                 Get the pointer to a component from an Entity's offset.
             */
-            virtual void* get_component_pointer(size_t& offset) = 0;
+            virtual void* get_component_pointer(uint64_t& offset) = 0;
 
             /*
                 Get the pointer at the end of the storage
@@ -23,7 +22,7 @@ namespace eset {
                 Very useful when removing an entity's components from one
                 archetype.
             */
-            virtual void move_from_end(size_t destination_offset) = 0;
+            virtual void move_from_end(uint64_t destination_offset) = 0;
 
             /*
                 Returns the size in bytes of this
@@ -46,14 +45,14 @@ namespace eset {
             /*
                 Inserts data at the end of the storage.
             */
-            virtual void* push_back(void* pointer) = 0;
+            virtual void push_back(void* pointer) = 0;
 
             /*
                 Moves data from data pointer to
                 the given offset. This keeps the
                 size of the storage.
             */
-            virtual void set_component(size_t offset, void* data_pointer) = 0;
+            virtual void set_component(uint64_t offset, void* data_pointer) = 0;
 
             /*
                 Removes the last component.
@@ -75,13 +74,33 @@ namespace eset {
             */
             virtual ~BaseStorage() = default;
 
-        private:
+            /*
+                Returns a unique id of the storage
+            */
+            uint16_t storage_id();
+
+            /*
+                Combines the storage id with an offset to
+                get a unique identifier used for the 
+                reference
+            */
+            uint64_t storage_offset_identifier(uint64_t offset);
+
+        protected:
+            static uint16_t m_storage_count;
+            uint16_t m_storage_id;
     };
 
     template<typename ComponentType>
     class ComponentStorage : public BaseStorage {
 
         public:
+
+            ComponentStorage() {
+                m_storage_id = m_storage_count;
+                m_storage_count++;
+            }
+
             void* get_component_pointer(size_t& offset) {
                 return &components[offset];
             }
@@ -90,7 +109,7 @@ namespace eset {
                 return &components[components.size() - 1];
             }
 
-            void move_from_end(size_t destination_offset) {
+            void move_from_end(uint64_t destination_offset) {
                 components[destination_offset] = std::move(components.back());
             }
 
@@ -106,12 +125,11 @@ namespace eset {
                 return Types::type_id<ComponentType>();
             }
             
-            void* push_back(void* pointer) {
+            void push_back(void* pointer) {
                 components.push_back(std::move(*(ComponentType*)pointer));
-                return &components[components.size() - 1];
             }
 
-            void set_component(size_t offset, void* data_pointer) {
+            void set_component(uint64_t offset, void* data_pointer) {
                 components[offset] = std::move(*(ComponentType*)data_pointer);
             }
 

@@ -2,6 +2,7 @@
 #include <vector>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <array>
 #include <chrono>
 #include <utility>
@@ -182,10 +183,10 @@ namespace eset {
                             for(size_t id : archetypes[archetype_index].compound_indices) {
                                 BaseStorage* storage = archetypes[archetype_index].compound[id];
                                 void* data = storage->get_component_pointer(old_offset);
-                                void* new_data = new_archetype.compound[id]->push_back(data);
+                                new_archetype.compound[id]->push_back(data);
 
                                 //swap references
-                                swap_reference_data(data, new_data);
+                                swap_reference_data(storage, old_offset, new_archetype.compound[id], new_offset);
                             }
 
                             //remove from old archetype
@@ -209,10 +210,10 @@ namespace eset {
                             for(size_t id : archetypes[archetype_index].compound_indices) {
                                 BaseStorage* storage = archetypes[archetype_index].compound[id];
                                 void* data = storage->get_component_pointer(old_offset);
-                                void* new_data = new_archetype.compound[id]->push_back(data);
+                                new_archetype.compound[id]->push_back(data);
 
                                 //swap references
-                                swap_reference_data(data, new_data);
+                                swap_reference_data(storage, old_offset, new_archetype.compound[id], new_offset);
                             }
 
                             //remove from old archetype
@@ -243,20 +244,24 @@ namespace eset {
             template<typename T>
             Ref<T> get(Entity entity) {
                 
-
                 //check if it exists
                 auto archetype_index_it = entities.find(entity);
                 if(archetype_index_it != entities.end()) {
 
                     //if it does, get the raw pointer to the component
                     size_t archetype_index = archetype_index_it->second;
-                    T* raw_pointer = archetypes[archetype_index].get_component<T>(entity);
+                    if(archetypes[archetype_index].has_component<T>()) {
+                        BaseStorage* storage = archetypes[archetype_index].compound[Types::type_id<T>()];
+                        size_t offset = archetypes[archetype_index].entity_to_offset[entity];
 
-                    //then get the reference data and return it wrapped in a reference
-                    ReferenceData* underlying_reference_data = reference_data(raw_pointer);
-                    underlying_reference_data->m_entity = entity;
-                    return Ref<T>(underlying_reference_data);
+                        //then get the reference data and return it wrapped in a reference
+                        ReferenceData* underlying_reference_data = reference_data(storage, offset);
+                        underlying_reference_data->m_entity = entity;
+                        return Ref<T>(underlying_reference_data);
 
+                    } else {
+                        return Ref<T>();
+                    }
                 } else {
                     return Ref<T>();
                 }
@@ -397,11 +402,11 @@ namespace eset {
             
         private:
 
-            ReferenceData* reference_data(void* component_pointer);
-            void swap_reference_data(void* old_component_pointer, void* new_component_pointer);
+            ReferenceData* reference_data(BaseStorage* storage, size_t offset);
+            void swap_reference_data(BaseStorage* old_storage, uint64_t old_offset, BaseStorage* new_storage, uint64_t new_offset);
             void delete_reference_pointer(ReferenceData* reference_data);
-            void make_reference_data_pointer_null(void* component_pointer);
-            void make_reference_entity_null(void* component_pointer);
+            void make_reference_data_pointer_null(BaseStorage* storage, uint64_t offset);
+            void make_reference_entity_null(BaseStorage* storage, uint64_t offset);
             template<typename> friend class Ref;
             friend Archetype;
 
@@ -420,7 +425,7 @@ namespace eset {
             std::unordered_map<Entity, size_t> entities;
 
             //lookups for all the references that exists
-            std::unordered_map<void*, ReferenceData*> component_to_reference_data;
-            std::unordered_map<ReferenceData*, void*> reference_data_to_component;
+            std::unordered_map<uint64_t, ReferenceData*> sid_to_reference_data;
+            std::unordered_set<ReferenceData*> reference_datas;
     };
 }

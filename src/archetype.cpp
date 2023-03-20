@@ -1,7 +1,6 @@
 #include "archetype.h"
 #include "set.h"
 #include <cassert>
-#include <iostream>
 
 using namespace eset;
 
@@ -48,8 +47,8 @@ void Archetype::remove_entity(Entity entity, Set* set) {
         for(size_t id : compound_indices) {
             if(set) {
                 set->on_remove_signals[id].emit(entity);
-                set->make_reference_entity_null(compound[id]->get_last_component());
-                set->make_reference_data_pointer_null(compound[id]->get_last_component());
+                set->make_reference_entity_null(compound[id], offset);
+                set->make_reference_data_pointer_null(compound[id], offset);
             }
             compound[id]->remove_end();
         }
@@ -65,13 +64,12 @@ void Archetype::remove_entity(Entity entity, Set* set) {
 
                 //component's end of lifetime setup
                 set->on_remove_signals[id].emit(entity);
-                set->make_reference_entity_null(compound[id]->get_component_pointer(offset));
-                set->make_reference_data_pointer_null(compound[id]->get_component_pointer(offset));
+                set->make_reference_entity_null(compound[id], offset);
+                set->make_reference_data_pointer_null(compound[id], offset);
 
-                //change reference data for the last pointer that is being swapped to the middle of the storage before removing
-                void* last = compound[id]->get_last_component(); //this is not being removed
-                void* before_removal = compound[id]->get_component_pointer(offset); //this is being removed
-                set->swap_reference_data(last, before_removal);
+                //change reference data for the last offset that is being swapped to the middle of the storage before removing
+                uint64_t last_offset = compound[id]->get_component_count(); //this is not being removed
+                set->swap_reference_data(compound[id], last_offset, compound[id], offset);
             }
 
             compound[id]->move_from_end(offset);
