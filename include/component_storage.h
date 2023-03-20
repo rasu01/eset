@@ -14,6 +14,11 @@ namespace eset {
             virtual void* get_component_pointer(size_t& offset) = 0;
 
             /*
+                Get the pointer at the end of the storage
+            */
+            virtual void* get_last_component() = 0;
+
+            /*
                 Moves the last component to another offset.
                 Very useful when removing an entity's components from one
                 archetype.
@@ -41,7 +46,7 @@ namespace eset {
             /*
                 Inserts data at the end of the storage.
             */
-            virtual void push_back(void* pointer) = 0;
+            virtual void* push_back(void* pointer) = 0;
 
             /*
                 Moves data from data pointer to
@@ -81,6 +86,10 @@ namespace eset {
                 return &components[offset];
             }
 
+            void* get_last_component() {
+                return &components[components.size() - 1];
+            }
+
             void move_from_end(size_t destination_offset) {
                 components[destination_offset] = std::move(components.back());
             }
@@ -97,8 +106,9 @@ namespace eset {
                 return Types::type_id<ComponentType>();
             }
             
-            void push_back(void* pointer) {
+            void* push_back(void* pointer) {
                 components.push_back(std::move(*(ComponentType*)pointer));
+                return &components[components.size() - 1];
             }
 
             void set_component(size_t offset, void* data_pointer) {

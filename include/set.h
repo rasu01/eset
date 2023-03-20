@@ -6,8 +6,9 @@
 #include <chrono>
 #include <utility>
 #include "archetype.h"
-#include "types.h"
+#include "reference.h"
 #include "signal.h"
+#include "types.h"
 
 namespace eset {
 
@@ -102,6 +103,7 @@ namespace eset {
         public:
 
             Set();
+            ~Set();
 
             /*
                 Returns true if the entity provided exists,
@@ -114,7 +116,6 @@ namespace eset {
                 returns true, else it returns false.
             */
             bool remove(Entity entity);
-
 
             /*
                 Creates a single entity with no components attached.
@@ -181,7 +182,10 @@ namespace eset {
                             for(size_t id : archetypes[archetype_index].compound_indices) {
                                 BaseStorage* storage = archetypes[archetype_index].compound[id];
                                 void* data = storage->get_component_pointer(old_offset);
-                                new_archetype.compound[id]->push_back(data); 
+                                void* new_data = new_archetype.compound[id]->push_back(data);
+
+                                //swap references
+                                swap_reference_data(data, new_data);
                             }
 
                             //remove from old archetype
@@ -205,7 +209,10 @@ namespace eset {
                             for(size_t id : archetypes[archetype_index].compound_indices) {
                                 BaseStorage* storage = archetypes[archetype_index].compound[id];
                                 void* data = storage->get_component_pointer(old_offset);
-                                new_archetype.compound[id]->push_back(data);
+                                void* new_data = new_archetype.compound[id]->push_back(data);
+
+                                //swap references
+                                swap_reference_data(data, new_data);
                             }
 
                             //remove from old archetype
@@ -235,6 +242,33 @@ namespace eset {
 
             /*
                 Tries to return a reference to a component
+                from an entity. Returns an invalid(unaltered default constructed)
+                reference if it doesn't exist.
+            */
+            template<typename T>
+            Ref<T> get(Entity entity) {
+                
+
+                //check if it exists
+                auto archetype_index_it = entities.find(entity);
+                if(archetype_index_it != entities.end()) {
+
+                    //if it does, get the raw pointer to the component
+                    size_t archetype_index = archetype_index_it->second;
+                    T* raw_pointer = archetypes[archetype_index].get_component<T>(entity);
+
+                    //then get the reference data and return it wrapped in a reference
+                    ReferenceData* underlying_reference_data = reference_data(raw_pointer);
+                    underlying_reference_data->m_entity = entity;
+                    return Ref<T>(underlying_reference_data);
+
+                } else {
+                    return Ref<T>();
+                }
+            }
+
+            /*
+                Tries to return a raw pointer to a component
                 from an entity.
             */
             template<typename T>
@@ -365,6 +399,14 @@ namespace eset {
             
         private:
 
+            ReferenceData* reference_data(void* component_pointer);
+            void swap_reference_data(void* old_component_pointer, void* new_component_pointer);
+            void delete_reference_pointer(ReferenceData* reference_data);
+            void make_reference_data_pointer_null(void* component_pointer);
+            void make_reference_entity_null(void* component_pointer);
+            template<typename> friend class Ref;
+            friend Archetype;
+
             //counter for all the entites that have been spawned
             //starts at 1, since 0 is the "null" entity.
             size_t entity_counter = 1;
@@ -378,5 +420,9 @@ namespace eset {
             //all the entities that exist inside this Set instance.
             //the value is which archetype index it uses in the vector above
             std::unordered_map<Entity, size_t> entities;
+
+            //lookups for all the references that exists
+            std::unordered_map<void*, ReferenceData*> component_to_reference_data;
+            std::unordered_map<ReferenceData*, void*> reference_data_to_component;
     };
 }

@@ -1,4 +1,5 @@
 #include "archetype.h"
+#include "set.h"
 #include <cassert>
 #include <iostream>
 
@@ -35,7 +36,7 @@ Archetype::~Archetype() {
     }
 }
 
-void Archetype::remove_entity(Entity entity, Signal<Entity>* on_destroy_signals) {
+void Archetype::remove_entity(Entity entity, Set* set) {
 
     //since we check if the entity exist in the set, it should exist here too.
     //therefore, we don't need to check again inside this Archetype
@@ -45,10 +46,12 @@ void Archetype::remove_entity(Entity entity, Signal<Entity>* on_destroy_signals)
     if(offset == offset_to_entity.size() - 1) {
         //remove all the components and swap end components
         for(size_t id : compound_indices) {
-            compound[id]->remove_end();
-            if(on_destroy_signals) {
-                on_destroy_signals[id].emit(entity);
+            if(set) {
+                set->on_remove_signals[id].emit(entity);
+                set->make_reference_entity_null(compound[id]->get_last_component());
+                set->make_reference_data_pointer_null(compound[id]->get_last_component());
             }
+            compound[id]->remove_end();
         }
         entity_to_offset.erase(entity);
         offset_to_entity.pop_back();
@@ -57,6 +60,20 @@ void Archetype::remove_entity(Entity entity, Signal<Entity>* on_destroy_signals)
 
         //remove all the components and swap end components
         for(size_t id : compound_indices) {
+
+            if(set) {
+
+                //component's end of lifetime setup
+                set->on_remove_signals[id].emit(entity);
+                set->make_reference_entity_null(compound[id]->get_component_pointer(offset));
+                set->make_reference_data_pointer_null(compound[id]->get_component_pointer(offset));
+
+                //change reference data for the last pointer that is being swapped to the middle of the storage before removing
+                void* last = compound[id]->get_last_component(); //this is not being removed
+                void* before_removal = compound[id]->get_component_pointer(offset); //this is being removed
+                set->swap_reference_data(last, before_removal);
+            }
+
             compound[id]->move_from_end(offset);
             compound[id]->remove_end();
         }

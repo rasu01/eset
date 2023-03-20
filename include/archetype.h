@@ -118,7 +118,7 @@ namespace eset {
                 This shouldn't really be used by the user, since removing a nonexistant 
                 entity will give undefined behaviour.
             */
-            void remove_entity(Entity entity, Signal<Entity>* on_destroy_signals);
+            void remove_entity(Entity entity, Set* set);
 
             /*
                 Initializes an entity inside the Archetype.
