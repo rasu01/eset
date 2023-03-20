@@ -16,7 +16,37 @@ namespace eset {
         Set* m_set;
     };
 
-    void set_delete_reference_pointer(Set* set, ReferenceData* reference_data);
+    class BaseReference {
+        public:
+            /*
+                Returns the pointer to the entity set the component
+                comes from. Can be null if the the set no longer exist.
+            */
+            Set* set();
+
+            /*
+                Returns the entity that the component is attached to.
+
+                Returns eset::null if the underlying data is invalid.
+                This could for example be the case if the entity no
+                longer exists.
+            */
+            Entity entity();
+
+            /*
+                Returns the amount of reference instances that are referencing this data.
+            */
+            size_t reference_count();
+
+            /*
+                Returns true if the underlying raw pointer is valid
+            */
+            bool valid();
+
+        protected:
+            void let_set_delete_reference_data();
+            ReferenceData* m_reference_data;
+    };
 
     /*
         If you want to save a reference to a component, use this.
@@ -37,16 +67,19 @@ namespace eset {
         Component* component = entity_set.get_raw<Component>(entity);
     */
     template<typename ComponentType>
-    class Ref {
+    class Ref : public BaseReference {
         public:
 
             /*
                 Creates an empty reference, and should not
                 be used.
             */
-            Ref() : m_reference_data(nullptr) {}
+            Ref() {
+                m_reference_data = nullptr;
+            }
 
-            Ref(ReferenceData* reference_data) : m_reference_data(reference_data) {
+            Ref(ReferenceData* reference_data) {
+                m_reference_data = reference_data;
                 if(m_reference_data) {
                     m_reference_data->m_reference_count++;
                 }
@@ -56,7 +89,8 @@ namespace eset {
                 Copy constructor. Makes a copy
                 and increases the reference count.
             */
-            Ref(const Ref& other) : m_reference_data(other.m_reference_data) {
+            Ref(const Ref& other) {
+                m_reference_data = other.m_reference_data;
                 if(m_reference_data) {
                     m_reference_data->m_reference_count++;
                 }
@@ -83,7 +117,8 @@ namespace eset {
                 the other an empty reference(invalid). No need
                 to increase reference count
             */
-            Ref(Ref&& other) : m_reference_data(other.m_reference_data) {
+            Ref(Ref&& other) {
+                m_reference_data = other.m_reference_data;
                 other.m_reference_data = nullptr;
             }
 
@@ -115,46 +150,9 @@ namespace eset {
                     } else {
                         if(m_reference_data->m_reference_count == 0) {
                             //let the entity set delete it
-                            m_reference_data->m_set->delete_reference_pointer(m_reference_data);
+                            let_set_delete_reference_data();
                         }
                     }
-                }
-            }
-
-            /*
-                Returns the pointer to the entity set the component
-                comes from. Can be null if the the set no longer exist.
-            */
-            Set* set() {
-                return m_reference_data->m_set;
-            }
-
-            /*
-                Returns the entity that the component is attached to.
-
-                Returns eset::null if the underlying data is invalid.
-                This could for example be the case if the entity no
-                longer exists.
-            */
-            Entity entity() {
-                return m_reference_data->m_entity;
-            }
-
-            /*
-                Returns the amount of reference instances that are referencing this data.
-            */
-            size_t reference_count() {
-                return m_reference_data->m_reference_count;
-            }
-
-            /*
-                Returns true if the underlying raw pointer is valid
-            */
-            bool valid() {
-                if(m_reference_data) {
-                    return m_reference_data->m_storage != nullptr;
-                } else {
-                    return false;
                 }
             }
 
@@ -178,6 +176,5 @@ namespace eset {
             }
 
         private:
-            ReferenceData* m_reference_data;
     };
 }

@@ -407,7 +407,7 @@ namespace eset {
             void delete_reference_pointer(ReferenceData* reference_data);
             void make_reference_data_pointer_null(BaseStorage* storage, uint64_t offset);
             void make_reference_entity_null(BaseStorage* storage, uint64_t offset);
-            template<typename> friend class Ref;
+            friend class BaseReference;
             friend Archetype;
 
             //counter for all the entites that have been spawned
