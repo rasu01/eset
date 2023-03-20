@@ -131,7 +131,7 @@ namespace eset {
                 true.
             */
             template<typename T>
-            bool insert_component(Entity entity, T component) {
+            bool insert(Entity entity, T component) {
 
                 //check if the entity exists
                 auto archetype_index_it = entities.find(entity);
@@ -235,11 +235,6 @@ namespace eset {
                 }
             }
 
-            template<typename T, typename... Args>
-            void emplace_component(Args&&... args) {
-
-            } 
-
             /*
                 Tries to return a reference to a component
                 from an entity. Returns an invalid(unaltered default constructed)
@@ -272,7 +267,7 @@ namespace eset {
                 from an entity.
             */
             template<typename T>
-            T* get_component(Entity entity) {
+            T* get_raw(Entity entity) {
 
                 //check if it exists
                 auto archetype_index_it = entities.find(entity);
@@ -293,7 +288,10 @@ namespace eset {
                 to multiple components. This is 
                 more efficient than using get_component
                 multiple times in a row to get different
-                components from a single entity. 
+                components from a single entity.
+                This does not return references. 
+                The use case of this will mostly
+                be for one time cases anyways
             */
             template<typename... Ts>
             std::tuple<Ts*...> get_components(Entity entity) {

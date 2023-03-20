@@ -72,11 +72,11 @@ bool test_component_get() {
     eset::Set set;
     eset::Entity entity = set.create();
 
-    set.insert_component<float>(entity, 1024.0);
-    set.insert_component<size_t>(entity, 512);
+    set.insert<float>(entity, 1024.0);
+    set.insert<size_t>(entity, 512);
     
-    float decimal = *set.get_component<float>(entity);    
-    size_t number = *set.get_component<size_t>(entity);
+    float decimal = *set.get_raw<float>(entity);    
+    size_t number = *set.get_raw<size_t>(entity);
 
     return number == 512 && decimal == 1024.0;
 }
@@ -98,8 +98,8 @@ bool test_iteration() {
         eset::Entity entity = set.create();
         Position pos = {42.0, 0.0};
         Unit unit = {"yo"};
-        set.insert_component<Position>(entity, pos);
-        set.insert_component<Unit>(entity, unit);
+        set.insert<Position>(entity, pos);
+        set.insert<Unit>(entity, unit);
     }
 
     size_t count = 0;
@@ -127,11 +127,11 @@ bool test_copy() {
     {
         TestComponent tc;
         tc.string = "Testing to construct a new string here!!";
-        set.insert_component<float>(entity, 10.0);
-        set.insert_component<TestComponent>(entity, tc);
+        set.insert<float>(entity, 10.0);
+        set.insert<TestComponent>(entity, tc);
     }
 
-    return set.get_component<TestComponent>(entity)->string == "Testing to construct a new string here!!";
+    return set.get_raw<TestComponent>(entity)->string == "Testing to construct a new string here!!";
 }
 
 struct TestComponent {
@@ -148,8 +148,8 @@ bool test_destructor() {
     {
         eset::Set set;
         eset::Entity entity = set.create();
-        set.insert_component<TestComponent>(entity, TestComponent());
-        set.insert_component<float>(entity, 0.0f);
+        set.insert<TestComponent>(entity, TestComponent());
+        set.insert<float>(entity, 0.0f);
         //<--- should delete all the components when the set goes out of scope!
     }
 
@@ -167,14 +167,14 @@ bool test_signals_on_destroy() {
     set.connect_on_remove<float>(test);
 
     eset::Entity entity = set.create();
-    set.insert_component<float>(entity, 0.0f);
+    set.insert<float>(entity, 0.0f);
     set.remove(entity);
 
     entity = set.create();
-    set.insert_component<float>(entity, 0.0f);
+    set.insert<float>(entity, 0.0f);
     
     eset::Entity entity2 = set.create();
-    set.insert_component<float>(entity2, 0.0f);
+    set.insert<float>(entity2, 0.0f);
 
     set.remove(entity);
     set.disconnect_on_remove<float>(test);
@@ -190,11 +190,11 @@ bool test_references_validity() {
 
     eset::Set set;
     eset::Entity entity = set.create();
-    set.insert_component<float>(entity, 10.0f);
+    set.insert<float>(entity, 10.0f);
 
     eset::Ref<float> ref = set.get<float>(entity);
     test_return = test_return && ref.valid() && *ref.get() == 10.0f && ref.get() != nullptr && ref.get() != old_pointer && ref.entity() == entity; old_pointer = ref.get();
-    set.insert_component<int>(entity, 1);
+    set.insert<int>(entity, 1);
     test_return = test_return && ref.valid() && *ref.get() == 10.0f && ref.get() != nullptr && ref.get() != old_pointer && ref.entity() == entity; old_pointer = ref.get();
 
     //here the ref.get() shouldn't change
@@ -204,7 +204,7 @@ bool test_references_validity() {
     }
 
     eset::Entity entity2 = set.create();
-    set.insert_component<float>(entity2, 20.0f);
+    set.insert<float>(entity2, 20.0f);
     eset::Ref<float> ref3 = set.get<float>(entity2);
     test_return = test_return && ref.valid() && *ref.get() == 10.0f && ref.get() != nullptr && ref.entity() == entity;
     test_return = test_return && ref3.valid() && *ref3.get() == 20.0f && ref3.get() != nullptr && ref3.entity() == entity2;
@@ -221,7 +221,7 @@ bool test_references_validity() {
 bool test_reference_count() {
     eset::Set set;
     eset::Entity entity = set.create();
-    set.insert_component<float>(entity, 10.0f);
+    set.insert<float>(entity, 10.0f);
 
     eset::Ref<float> ref1 = set.get<float>(entity);
     {
@@ -242,7 +242,7 @@ bool test_reference_set_pointer() {
     {
         eset::Set set;
         eset::Entity entity = set.create();
-        set.insert_component<float>(entity, 10.0f);
+        set.insert<float>(entity, 10.0f);
         ref = set.get<float>(entity);
         test_return = test_return && ref.set() != nullptr;
     }
