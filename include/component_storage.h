@@ -10,7 +10,7 @@ namespace eset {
             /*
                 Get the pointer to a component from an Entity's offset.
             */
-            virtual void* get_component_pointer(uint64_t& offset) = 0;
+            virtual void* get_component_pointer(uint64_t offset) = 0;
 
             /*
                 Get the pointer at the end of the storage
@@ -101,7 +101,7 @@ namespace eset {
                 m_storage_count++;
             }
 
-            void* get_component_pointer(size_t& offset) {
+            void* get_component_pointer(uint64_t offset) {
                 return &components[offset];
             }
 
