@@ -10,7 +10,7 @@ esetと言うのは、英語のエンティティセットの略語であり、�
 # 繰り返し方
 エンティティに含まれている希望する要素を指定し、普通のfor文のように繰り返します。このプログラムが要素のコンテンツを出力します。
 指定した要素が含まれていないエンティティは無視されます。
-```
+```C++
 //要素の宣言
 class ClassComponent {
   float a;
@@ -35,7 +35,7 @@ for(auto [entity_id, class_comp, struct_comp] : set.iterator<ClassComponent, Str
 
 # エンティティの変更の仕方
 セットから新しいエンティティを取得し、そのエンティティの中に要素を追加したり、削除したりすることができ、エンティティ自体も削除することができます。
-```
+```C++
 //要素の宣言
 class Person {
   Person(std::string n, int a) {
