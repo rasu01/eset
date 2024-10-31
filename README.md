@@ -1,4 +1,5 @@
 # eset
+([日本語版はこちら](READMEJP.md))<br/>
 Eset is supposed to be short for "Entity Set" and is an Entity Component System written in C++. It's goal is to be fast and simple!
 
 The actual ECS is using archetypes, to store different types of entities that shares the same unique signature.
