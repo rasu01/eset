@@ -33,7 +33,7 @@ for(auto [entity_id, class_comp, struct_comp] : set.iterator<ClassComponent, Str
 }
 ```
 
-# 追加と削除の仕方
+# エンティティの変更の仕方
 セットから新しいエンティティを取得し、そのエンティティの中に要素を追加したり、削除したりすることができ、エンティティ自体も削除することができます。
 ```
 //要素の宣言
