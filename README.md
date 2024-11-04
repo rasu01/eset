@@ -9,7 +9,7 @@ Because the entities that exist in every archetype have the same type, only the 
 
 # How to iterate
 Specifty desired components that exist inside the entities and iterate over them like a normal for loop. This program will output the components' content. The entities that does not contain the specified components, will be ignored.
-```
+```C++
 //declaration of components
 class ClassComponent {
   float a;
